@@ -1,50 +1,50 @@
 # Betterflow
 
-Nền tảng cho công cụ tạo roadmap học tập và onboarding nội bộ, theo Project Brief Phase 1.
-Repo này dựng sẵn môi trường phát triển để nhóm có thể chia việc theo tính năng.
+A foundation for an internal learning and onboarding roadmap tool, based on the Phase 1 project brief.
+This repository provides the development setup so the team can work on features independently.
 
-## Phạm vi hiện tại
+## Current scope
 
-Đã có:
+Included:
 
-- npm workspaces gồm `client/` và `server/`, dùng chung lockfile.
-- React, Vite, TypeScript strict, React Router và TanStack Query.
-- Trang khởi động responsive và trang 404.
-- API client, error boundary và trạng thái kết nối FE/BE.
-- Express 5, CORS, Helmet, giới hạn JSON payload, format lỗi và shutdown.
-- PostgreSQL pool, kiểm tra phiên bản 18, migration runner có transaction, checksum và advisory lock.
-- ESLint, Prettier, Vitest, Playwright và GitHub Actions.
-- Các dependency theo brief: `@xyflow/react`, `html-to-image`, `@dagrejs/dagre`, `pg`, `bcrypt`, `jsonwebtoken`.
+- npm workspaces for `client/` and `server/`, with a shared lockfile.
+- React, Vite, strict TypeScript, React Router and TanStack Query.
+- A responsive starter page and a 404 page.
+- An API client, route error boundary and frontend/backend connection status.
+- Express 5, CORS, Helmet, JSON payload limits, consistent errors and graceful shutdown.
+- A PostgreSQL connection pool, version 18 checks and a migration runner with transactions, checksums and an advisory lock.
+- ESLint, Prettier, Vitest, Playwright and GitHub Actions.
+- Dependencies from the brief: `@xyflow/react`, `html-to-image`, `@dagrejs/dagre`, `pg`, `bcrypt` and `jsonwebtoken`.
 
-Chưa triển khai: đăng ký/đăng nhập, JWT middleware, CRUD roadmap, chỉnh sửa/nối node, persistence, chia sẻ, markdown parser, auto layout và xuất file.
-Không có schema nghiệp vụ, tài khoản mẫu hoặc dữ liệu giả được lưu trên backend.
-Các tính năng được để lại cho intern triển khai theo từng task.
-Checklist contract cần nhóm chốt nằm trong [docs/contracts.md](docs/contracts.md).
+Not implemented yet: registration/login, JWT middleware, roadmap CRUD, node editing and connections, persistence, sharing, markdown parsing, automatic layout and file exports.
+There is no domain schema, demo account or mock data stored on the backend.
+The interns will implement these features as separate tasks.
+The checklist of contracts the team needs to agree on is in [docs/contracts.md](docs/contracts.md).
 
-## Design system frontend
+## Frontend design system
 
-FE dùng preset **AI Labs**, tải bằng `npx designdotmd add ai-labs` và lưu nguyên bản tại [design.md](design.md).
-CSS tokens dùng chung nằm trong `client/src/styles/tokens.css`, gồm màu, typography, khoảng cách và bo góc.
-IBM Plex Sans và IBM Plex Mono được đóng gói local để không cần tải font từ dịch vụ bên ngoài lúc mở trang.
-Dùng nền trắng giấy, viền mảnh, màu phẳng và một hành động chính màu xanh trên mỗi màn hình.
-Nhãn nút xanh dùng chữ đen để giữ độ tương phản ở cỡ chữ nhỏ.
-Intern nên tái sử dụng các tokens này khi triển khai các màn hình Phase 1.
+The frontend uses the **AI Labs** preset, imported with `npx designdotmd add ai-labs` and preserved in [design.md](design.md).
+Shared CSS tokens in `client/src/styles/tokens.css` define colors, typography, spacing and border radii.
+IBM Plex Sans and IBM Plex Mono are bundled locally, so opening the app does not require an external font service.
+Use paper-white backgrounds, thin borders, flat colors and one green primary action per screen.
+Green buttons use dark text to maintain contrast at small font sizes.
+Reuse these tokens when building the Phase 1 screens.
 
-## Yêu cầu
+## Requirements
 
-- Node.js 24.x và npm 11 trở lên (`.nvmrc` đã chỉ định Node 24).
-- PostgreSQL 18.x mới nhất trong major 18 và CLI `psql` nếu làm việc với database.
+- Node.js 24.x and npm 11 or later (`.nvmrc` specifies Node 24).
+- The latest PostgreSQL 18.x release and the `psql` CLI when working with the database.
 - Git.
 
-FE và API liveness chạy được khi chưa cấu hình database.
-Các lệnh `db:*` và readiness cần PostgreSQL thật.
+The frontend and API liveness endpoint work without a configured database.
+The `db:*` commands and readiness endpoint require a running PostgreSQL instance.
 
-Toolchain dùng override `minimatch >=11.0.1` để tránh [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) trong dependency của ESLint.
-Gỡ override khi các dependency cha đã nâng lên bản vá tương ứng.
+The toolchain overrides `minimatch` to version `>=11.0.1` to avoid [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) in ESLint dependencies.
+Remove the override once the parent dependencies use a patched version.
 
-## Chạy từ đầu
+## Getting started
 
-Tại root repo:
+Run these commands from the repository root:
 
 ```sh
 nvm use
@@ -56,17 +56,17 @@ npm run dev
 
 - Frontend: `http://127.0.0.1:5173`.
 - API: `http://localhost:3001/api/health`.
-- Vite proxy `/api/*` sang backend local, nên không cần điền `VITE_API_URL` khi phát triển.
-- Các giá trị trống trong `.env.example` dùng default local, trừ các biến secret/database không có default.
-- Nếu cổng 5173 bị chiếm, Vite báo lỗi thay vì âm thầm đổi cổng.
+- Vite proxies `/api/*` to the local backend, so `VITE_API_URL` can remain blank during development.
+- Blank values from `.env.example` use local defaults, except database and secret variables, which have no defaults.
+- If port 5173 is occupied, Vite exits with an error instead of switching ports silently.
 
-Không commit các file `.env` vừa tạo.
-Các file này đã được đưa vào `.gitignore`.
+Do not commit the `.env` files you create.
+They are already covered by `.gitignore`.
 
-## Database local
+## Local database
 
-Cài PostgreSQL 18 và khởi động dịch vụ theo hệ điều hành của bạn.
-Kiểm tra CLI và tạo database bằng tài khoản PostgreSQL local của bạn:
+Install PostgreSQL 18 and start its service using the instructions for your operating system.
+Check the CLI and create the database using your local PostgreSQL account:
 
 ```sh
 psql --version
@@ -74,13 +74,13 @@ createdb betterflow
 psql -d betterflow -c 'SELECT version();'
 ```
 
-Điền vào `server/.env` với thông tin local thực tế:
+Set `DATABASE_URL` in `server/.env` using your actual local credentials:
 
 ```dotenv
 DATABASE_URL=postgresql://<user>:<password>@localhost:5432/betterflow
 ```
 
-Chạy từ root:
+Run from the repository root:
 
 ```sh
 npm run db:check
@@ -88,123 +88,126 @@ npm run db:migrate
 curl http://localhost:3001/api/health/ready
 ```
 
-Chưa có domain migration; runner chỉ tạo bảng theo dõi `schema_migrations`.
-Sau khi nhóm chốt schema, thêm file SQL theo [quy ước migration](server/db/migrations/README.md).
-Chạy migration bằng connection trực tiếp, đặc biệt khi dùng Neon, để advisory lock nằm trên cùng session.
-Không chạy migration tự động lúc khởi động API hoặc trong request serverless.
-`server/db/seed.sql` hiện chỉ là nơi dành cho fixtures local sau khi schema được duyệt.
+There are no domain migrations yet; the runner only creates the `schema_migrations` tracking table.
+Once the team agrees on the schema, add SQL files following the [migration conventions](server/db/migrations/README.md).
+Use a direct database connection for migrations, especially with Neon, so the advisory lock stays on the same session.
+Do not run migrations automatically during API startup or inside serverless requests.
+`server/db/seed.sql` is reserved for local development fixtures after the schema is approved.
 
-## Biến môi trường
+## Environment variables
 
-| File          | Biến             | Default local / mục đích                                         |
-| ------------- | ---------------- | ---------------------------------------------------------------- |
-| `client/.env` | `VITE_API_URL`   | `/api`; khi deploy dùng URL đầy đủ của backend, có hậu tố `/api` |
-| `server/.env` | `NODE_ENV`       | `development`; production yêu cầu DB và JWT secret               |
-| `server/.env` | `PORT`           | `3001`                                                           |
-| `server/.env` | `CLIENT_ORIGIN`  | `http://localhost:5173`; khi deploy đặt đúng origin của FE       |
-| `server/.env` | `DATABASE_URL`   | Không có default; PostgreSQL 18 local hoặc Neon                  |
-| `server/.env` | `JWT_SECRET`     | Không có default; ít nhất 32 ký tự, dành cho tính năng auth      |
-| `server/.env` | `JWT_EXPIRES_IN` | `1d`; chưa được sử dụng cho đến khi triển khai auth              |
+| File          | Variable         | Local default / purpose                                              |
+| ------------- | ---------------- | -------------------------------------------------------------------- |
+| `client/.env` | `VITE_API_URL`   | `/api`; use the full backend URL ending in `/api` when deployed      |
+| `server/.env` | `NODE_ENV`       | `development`; production requires a database URL and JWT secret     |
+| `server/.env` | `PORT`           | `3001`                                                               |
+| `server/.env` | `CLIENT_ORIGIN`  | `http://localhost:5173`; set the exact frontend origin when deployed |
+| `server/.env` | `DATABASE_URL`   | No default; local PostgreSQL 18 or Neon connection string            |
+| `server/.env` | `JWT_SECRET`     | No default; at least 32 characters, reserved for authentication      |
+| `server/.env` | `JWT_EXPIRES_IN` | `1d`; unused until authentication is implemented                     |
 
-`CLIENT_ORIGIN` là một origin duy nhất, không phải danh sách phân tách bằng dấu phẩy.
-Ở local, khi gọi API trực tiếp qua trình duyệt tại `127.0.0.1`, đặt `CLIENT_ORIGIN=http://127.0.0.1:5173` nếu không đi qua Vite proxy.
-Không đưa secret vào biến `VITE_*` vì Vite nhúng chúng vào bundle trình duyệt.
-Để tạo secret local cho tính năng auth, có thể dùng:
+`CLIENT_ORIGIN` accepts one origin, not a comma-separated list.
+When calling the API directly from a local browser at `127.0.0.1`, set `CLIENT_ORIGIN=http://127.0.0.1:5173` if you bypass the Vite proxy.
+Do not put secrets in `VITE_*` variables because Vite includes them in the browser bundle.
+To generate a local signing secret for the authentication feature, run:
 
 ```sh
 node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
 ```
 
-## Lệnh hằng ngày
+## Development commands
 
-| Lệnh tại root          | Chức năng                                        |
-| ---------------------- | ------------------------------------------------ |
-| `npm run dev`          | Chạy đồng thời frontend và backend               |
-| `npm run typecheck`    | Kiểm tra kiểu ở hai workspace và browser tests   |
-| `npm run lint`         | ESLint, không chấp nhận warning                  |
-| `npm run format`       | Định dạng các file bằng Prettier                 |
-| `npm run format:check` | Kiểm tra format                                  |
-| `npm test`             | Test HTTP API và cấu hình, không cần DB          |
-| `npm run build`        | Build FE vào `client/dist`, BE vào `server/dist` |
-| `npm run check`        | Format, lint, typecheck, test và build           |
-| `npm run test:e2e`     | Browser smoke tests trên desktop và mobile       |
+| Command at repository root | Purpose                                                          |
+| -------------------------- | ---------------------------------------------------------------- |
+| `npm run dev`              | Run the frontend and backend together                            |
+| `npm run typecheck`        | Check types in both workspaces and browser tests                 |
+| `npm run lint`             | Run ESLint with no warnings allowed                              |
+| `npm run format`           | Format files with Prettier                                       |
+| `npm run format:check`     | Check formatting                                                 |
+| `npm test`                 | Run HTTP API and configuration tests without a database          |
+| `npm run build`            | Build the frontend to `client/dist` and backend to `server/dist` |
+| `npm run check`            | Run formatting checks, lint, type checks, tests and builds       |
+| `npm run test:e2e`         | Run desktop and mobile browser smoke tests                       |
 
-Chuẩn bị browser một lần trước khi chạy E2E:
+Install the browser once before running E2E tests:
 
 ```sh
 npx playwright install chromium
 npm run test:e2e
 ```
 
-Playwright tự khởi động FE/BE khi chưa có dev server.
-Smoke tests kiểm tra API qua Vite proxy, routing, reload URL và tràn chiều ngang.
-API tests mock lớp database để chạy độc lập, không thay thế kiểm thử PostgreSQL thật.
-Kiểm tra production build local bằng `npm run start -w server` và `npm run preview -w client` ở hai terminal, đồng thời đặt `VITE_API_URL=http://localhost:3001/api` trước khi build FE vì preview không dùng dev proxy.
-Khi mở preview tại `http://127.0.0.1:4173`, cấu hình backend `CLIENT_ORIGIN=http://127.0.0.1:4173`.
+Playwright starts the frontend and backend when development servers are not already running.
+Smoke tests cover the API through the Vite proxy, routing, URL reloads, horizontal overflow and local font loading.
+API tests mock the database layer to run independently; they do not replace tests against a real PostgreSQL instance.
+To check production builds locally, run `npm run start -w server` and `npm run preview -w client` in separate terminals.
+Set `VITE_API_URL=http://localhost:3001/api` before building the frontend because preview does not use the development proxy.
+When opening preview at `http://127.0.0.1:4173`, configure the backend with `CLIENT_ORIGIN=http://127.0.0.1:4173`.
 
-## Cấu trúc
+## Project structure
 
 ```text
 betterflow/
 ├── client/
 │   ├── src/
 │   │   ├── app/                # Router, layout, page shells
-│   │   ├── features/           # Hiện chỉ có system health API
-│   │   └── lib/                # API client, query client
+│   │   ├── features/           # Currently only the system health API
+│   │   ├── lib/                # API client, query client
+│   │   └── styles/             # Shared design tokens
 │   └── vercel.json             # SPA fallback
 ├── server/
 │   ├── src/
-│   │   ├── app.ts              # Express app, không listen
+│   │   ├── app.ts              # Express app without a listener
 │   │   ├── index.ts            # Local listener
 │   │   ├── config/             # Environment validation
 │   │   ├── db/                 # PostgreSQL pool
 │   │   ├── middleware/         # Error handler
 │   │   └── routes/             # Health endpoints
 │   ├── db/
-│   │   ├── migrations/         # SQL đánh số, chưa có domain schema
+│   │   ├── migrations/         # Numbered SQL files; no domain schema yet
 │   │   ├── migrate.ts
 │   │   └── seed.sql
 │   └── tests/
-├── docs/contracts.md           # Checklist để nhóm tự chốt thiết kế
+├── docs/contracts.md           # Checklist for team design decisions
 ├── e2e/
 ├── .github/workflows/ci.yml
+├── design.md                   # Imported AI Labs design reference
 └── AGENTS.md
 ```
 
-## API đã triển khai
+## Implemented API endpoints
 
-| Method | Endpoint            | Response                                                                                      |
-| ------ | ------------------- | --------------------------------------------------------------------------------------------- |
-| GET    | `/api/health`       | `200`, `{ "data": { "status": "ok", "service": "betterflow-api" } }`                          |
-| GET    | `/api/health/ready` | `200` khi PostgreSQL 18 sẵn sàng; `503` nếu chưa cấu hình, không truy cập được hoặc sai major |
+| Method | Endpoint            | Response                                                                                               |
+| ------ | ------------------- | ------------------------------------------------------------------------------------------------------ |
+| GET    | `/api/health`       | `200`, `{ "data": { "status": "ok", "service": "betterflow-api" } }`                                   |
+| GET    | `/api/health/ready` | `200` when PostgreSQL 18 is ready; `503` if unconfigured, unavailable or using the wrong major version |
 
-Thành công dùng envelope `{ data: ... }`.
-Lỗi dùng `{ error: { code, message } }`, không trả stack trace hoặc connection string.
-Endpoint chưa có trả `404 NOT_FOUND`, không trả dữ liệu giả cho các tính năng chưa xây dựng.
-Trạng thái API trên UI là liveness, không đại diện cho database đã sẵn sàng.
+Successful JSON responses use the `{ data: ... }` envelope.
+Errors use `{ error: { code, message } }` without exposing stack traces or connection strings.
+Unimplemented endpoints return `404 NOT_FOUND` rather than mock responses.
+The API status shown in the UI reflects liveness, not database readiness.
 
-## Phát triển theo nhóm
+## Team workflow
 
-Đọc `AGENTS.md` và chốt các mục trong `docs/contracts.md` trước khi bắt đầu tính năng.
-Phân công dự kiến từ brief: Quang phụ trách auth/API/share, Thắng phụ trách canvas/danh sách/xem share/PNG, Huy phụ trách markdown/auto layout/export markdown.
-Tạo `develop` và các nhánh `feature/<tên-tính-năng>` theo Gitflow của nhóm.
-Mỗi PR chỉ nên giải quyết một phần nhỏ, kèm cách test và ảnh UI khi có thay đổi giao diện.
-Cần ít nhất một peer approve, sau đó mentor review trước khi merge.
-Repo có PR template và CI; branch protection cùng GitHub Projects cần được thiết lập trên GitHub bởi người quản lý repo.
+Read `AGENTS.md` and agree on the items in `docs/contracts.md` before implementing features.
+The brief proposes these responsibilities: Quang handles authentication, APIs and sharing; Thắng handles the canvas, roadmap list, shared view and PNG export; Huy handles markdown, automatic layout and markdown export.
+Create `develop` and `feature/<feature-name>` branches following the team's Gitflow workflow.
+Keep each PR small and include test instructions and screenshots for UI changes.
+Require at least one peer approval, followed by mentor review, before merging.
+The repository includes a PR template and CI; a repository administrator still needs to configure branch protection and GitHub Projects on GitHub.
 
-## Chuẩn bị deploy
+## Deployment preparation
 
-Chưa có bản deploy trong scaffold này.
-Khi triển khai sản phẩm, tạo hai project Vercel từ cùng repo, Root Directory là `client` và `server`.
-Cho phép đọc file ngoài Root Directory vì hai workspace dùng `tsconfig.base.json` tại root.
-Giữ npm workspace detection và lockfile tại root repo.
+This scaffold has not been deployed.
+When deploying the product, create two Vercel projects from the same repository with Root Directory set to `client` and `server`, respectively.
+Allow files outside the Root Directory because both workspaces extend `tsconfig.base.json` at the repository root.
+Keep npm workspace detection and the lockfile at the repository root.
 
-- FE: framework Vite, build `npm run build`, output `dist`; đặt `VITE_API_URL=https://<backend-domain>/api` trước khi build.
-- BE: framework Express, entrypoint `server/src/app.ts` export default app; không dùng `dist/index.js` làm serverless handler.
-- BE production: đặt `NODE_ENV=production`, `DATABASE_URL`, `JWT_SECRET`, `CLIENT_ORIGIN` và `JWT_EXPIRES_IN` trong dashboard Vercel.
-- Neon: chọn PostgreSQL 18, dùng pooled connection string cho runtime API; giữ thông số TLS từ Neon.
-- Migration: chạy ngoài request bằng direct connection string trước khi đưa API mới vào sử dụng.
-- CORS: `CLIENT_ORIGIN` phải khớp domain FE, không có dấu `/` cuối URL.
-- Kiểm tra refresh URL, liveness và readiness sau deploy.
+- Frontend: use the Vite framework, build command `npm run build` and output directory `dist`; set `VITE_API_URL=https://<backend-domain>/api` before building.
+- Backend: use the Express framework with `server/src/app.ts` exporting the default app; do not use `dist/index.js` as the serverless handler.
+- Production backend: set `NODE_ENV=production`, `DATABASE_URL`, `JWT_SECRET`, `CLIENT_ORIGIN` and `JWT_EXPIRES_IN` in the Vercel dashboard.
+- Neon: choose PostgreSQL 18 and use a pooled connection string for the API runtime, preserving Neon's TLS settings.
+- Migrations: run outside requests using a direct connection string before rolling out the new API version.
+- CORS: `CLIENT_ORIGIN` must match the frontend origin without a trailing `/`.
+- After deployment, check URL reloads, liveness and readiness.
 
-Tài liệu tham khảo: [Vite](https://vite.dev/guide/), [React Flow](https://reactflow.dev/learn), [Express trên Vercel](https://vercel.com/docs/frameworks/backend/express).
+References: [Vite](https://vite.dev/guide/), [React Flow](https://reactflow.dev/learn), [Express on Vercel](https://vercel.com/docs/frameworks/backend/express).
