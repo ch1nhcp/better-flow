@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+package-lock.json
+playwright-report
+test-results
+*.sql
+# Imported design reference and generated package-manager lockfile.
+design.md
+pnpm-lock.yaml

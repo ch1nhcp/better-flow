@@ -1,0 +1,2 @@
+-- Add local development fixtures only after the team agrees on the schema.
+-- Never put real user data, plaintext passwords or credentials in this file.

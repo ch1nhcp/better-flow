@@ -1,0 +1,28 @@
+/* AI Labs preset from /design.md. Keep these foundations shared across features. */
+:root {
+  --color-primary: #0f1112;
+  --color-secondary: #6f7478;
+  --color-tertiary: #00a36c;
+  --color-neutral: #fafaf8;
+  --color-surface: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-border: color-mix(in srgb, var(--color-secondary) 24%, var(--color-surface));
+  --color-accent-hover: color-mix(in srgb, var(--color-tertiary) 90%, var(--color-primary));
+
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-display: 3.5rem;
+  --font-heading: 2rem;
+  --font-body: 0.95rem;
+  --font-label: 0.72rem;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+  --space-xl: 64px;
+}
