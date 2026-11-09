@@ -574,8 +574,8 @@ flowchart TD
 ## Ghi nhận thống nhất
 
 - Nguồn: tài liệu "Betterflow - Thống nhất thiết kế kỹ thuật (Kick-off)" do nhóm cung cấp.
-- Ngày kick-off: chưa được ghi trong tài liệu nguồn.
-- Người tham gia: chưa được ghi trong tài liệu nguồn.
+- Ngày kick-off: 09/11/2026.
+- Người tham gia: Quang Huy, Minh Thắng.
 - Quyết định: schema, API, graph và cú pháp Markdown được ghi tại các mục tương ứng ở trên.
 - Các quy tắc bổ sung trong lần hoàn thiện này gồm timestamp/xóa dữ liệu, validation/quyền truy cập, graphVersion/viewport, giới hạn graph và auto layout/lỗi parser.
 - Toàn bộ checkbox đã có nội dung contract; nhóm vẫn review các quyết định bổ sung trong PR, không coi đây là xác nhận code đã hoàn thành.
