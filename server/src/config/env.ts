@@ -7,7 +7,19 @@ const schema = z.object({
   CLIENT_ORIGIN: z.url().default('http://localhost:5173'),
   DATABASE_URL: z.url().optional(),
   JWT_SECRET: z.string().min(32).optional(),
-  JWT_EXPIRES_IN: z.string().default('1d'),
+  JWT_EXPIRES_IN: z
+    .string()
+    .default('1d')
+    .transform((value, context) => {
+      const match = /^([1-9]\d*)(s|m|h|d|w)$/.exec(value);
+      const units: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
+      const seconds = match ? Number(match[1]) * (units[match[2] ?? ''] ?? 0) : 0;
+      if (!Number.isSafeInteger(seconds) || seconds <= 0) {
+        context.addIssue({ code: 'custom', message: 'Use a positive duration such as 1d.' });
+        return z.NEVER;
+      }
+      return seconds;
+    }),
 });
 
 export function parseEnv(source: NodeJS.ProcessEnv) {
