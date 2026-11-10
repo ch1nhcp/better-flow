@@ -1,3 +1,5 @@
+import { endSession, getSession, tokenExpiresAt } from './auth-session';
+
 const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
 export class ApiError extends Error {
@@ -24,18 +26,39 @@ function isErrorResponse(value: unknown): value is { error: { code: string; mess
   );
 }
 
-// Token storage and the 401 session-expiry flow belong to the future auth feature.
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const headers = new Headers(options.headers);
-  if (options.body) headers.set('Content-Type', 'application/json');
-  const response = await fetch(`${apiBase}${path}`, { ...options, headers });
+interface ApiOptions extends RequestInit {
+  authenticated?: boolean;
+}
+
+export async function apiRequest<T>(path: string, options: ApiOptions = {}): Promise<T> {
+  const { authenticated, ...request } = options;
+  const session = getSession();
+  const headers = new Headers(request.headers);
+  if (authenticated) {
+    if (!session.token || (tokenExpiresAt(session.token) ?? 0) <= Date.now()) {
+      endSession(session, 'expired');
+      throw new ApiError(401, 'UNAUTHORIZED', 'Phiên đăng nhập đã hết hạn.');
+    }
+    headers.set('Authorization', `Bearer ${session.token}`);
+  }
+  if (request.body) headers.set('Content-Type', 'application/json');
+  const response = await fetch(`${apiBase}${path}`, { ...request, headers });
   if (response.status === 204) return undefined as T;
   const payload: unknown = await response.json().catch(() => null);
   if (!response.ok) {
+    const error = isErrorResponse(payload) ? payload.error : undefined;
+    if (
+      authenticated &&
+      response.status === 401 &&
+      error?.code === 'UNAUTHORIZED' &&
+      !request.signal?.aborted
+    ) {
+      endSession(session, 'expired');
+    }
     throw new ApiError(
       response.status,
-      isErrorResponse(payload) ? payload.error.code : 'REQUEST_FAILED',
-      isErrorResponse(payload) ? payload.error.message : 'Không thể kết nối với máy chủ.',
+      error?.code ?? 'REQUEST_FAILED',
+      error?.message ?? 'Không thể kết nối với máy chủ.',
     );
   }
   // Each feature validates or types its response at the API boundary.
