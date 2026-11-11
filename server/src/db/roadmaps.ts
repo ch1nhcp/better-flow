@@ -16,10 +16,16 @@ interface RoadmapRow extends QueryResultRow {
   updated_at: Date;
 }
 
+export interface RoadmapPreviewNode {
+  id: string;
+  label: string;
+}
+
 interface RoadmapSummaryRow extends QueryResultRow {
   id: number;
   title: string;
   node_count: number | string;
+  preview_nodes: RoadmapPreviewNode[];
   is_public: boolean;
   share_code: string | null;
   created_at: Date;
@@ -30,6 +36,7 @@ export interface RoadmapSummary {
   id: number;
   title: string;
   nodeCount: number;
+  previewNodes: RoadmapPreviewNode[];
   isPublic: boolean;
   shareCode: string | null;
   createdAt: string;
@@ -67,6 +74,7 @@ function formatRoadmapSummary(row: RoadmapSummaryRow): RoadmapSummary {
     id: row.id,
     title: row.title,
     nodeCount: Number(row.node_count) || 0,
+    previewNodes: Array.isArray(row.preview_nodes) ? row.preview_nodes : [],
     isPublic: row.is_public,
     shareCode: row.share_code,
     createdAt: row.created_at.toISOString(),
@@ -80,6 +88,25 @@ export async function findRoadmapsByUserId(userId: number): Promise<RoadmapSumma
        id,
        title,
        CASE WHEN jsonb_typeof(nodes) = 'array' THEN jsonb_array_length(nodes) ELSE 0 END AS node_count,
+       CASE WHEN jsonb_typeof(nodes) = 'array' THEN 
+           COALESCE(
+             (
+               SELECT jsonb_agg(
+                 jsonb_build_object(
+                   'id', elem->>'id',
+                   'label', elem->'data'->>'label'
+                 )
+               )
+               FROM (
+                 SELECT elem 
+                 FROM jsonb_array_elements(nodes) AS elem 
+                 LIMIT 3
+               ) sub
+             ), 
+             '[]'::jsonb
+           )
+         ELSE '[]'::jsonb 
+       END AS preview_nodes,
        is_public,
        share_code,
        created_at,
