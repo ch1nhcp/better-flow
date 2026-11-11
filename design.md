@@ -1,74 +1,86 @@
 ---
 version: alpha
-name: AI Labs
-description: Research-paper white, terminal-green prompts.
+name: Stripe Slate & Cobalt
+description: Bright Slate surfaces and Cobalt interactions for B2B Fintech and SaaS.
 colors:
-  primary: "#0F1112"
-  secondary: "#6F7478"
-  tertiary: "#00A36C"
-  neutral: "#FAFAF8"
-  surface: "#FFFFFF"
-  on-primary: "#FFFFFF"
+  primary: '#0F172A'
+  secondary: '#64748B'
+  tertiary: '#2563EB'
+  neutral: '#F8FAFC'
+  surface: '#FFFFFF'
+  on-primary: '#FFFFFF'
+  border: '#E2E8F0'
+  accent-hover: '#1D4ED8'
+  accent-soft: '#EFF6FF'
+  accent-border: '#BFDBFE'
+  edge: '#94A3B8'
 typography:
   display:
-    fontFamily: IBM Plex Sans
-    fontSize: 3.5rem
-    fontWeight: 500
-    letterSpacing: "-0.02em"
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif'
+    fontSize: 1.875rem
+    fontWeight: 700
+    lineHeight: 1.25
   h1:
-    fontFamily: IBM Plex Sans
-    fontSize: 2rem
-    fontWeight: 500
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif'
+    fontSize: 1.5rem
+    fontWeight: 700
+    lineHeight: 2rem
   body:
-    fontFamily: IBM Plex Sans
-    fontSize: 0.95rem
-    lineHeight: 1.6
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif'
+    fontSize: 0.875rem
+    lineHeight: 1.55
   label:
-    fontFamily: IBM Plex Mono
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     fontSize: 0.72rem
 rounded:
   sm: 3px
-  md: 5px
-  lg: 8px
+  md: 8px
+  lg: 16px
 spacing:
+  xs: 4px
   sm: 8px
   md: 16px
   lg: 32px
+  xl: 64px
 components:
   button-primary:
-    backgroundColor: "{colors.tertiary}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.md}"
-    padding: 12px 20px
+    backgroundColor: '{colors.tertiary}'
+    textColor: '{colors.on-primary}'
+    rounded: 6px
+    padding: 7px 14px
   card:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.primary}"
-    rounded: "{rounded.lg}"
-    padding: 24px
+    backgroundColor: '{colors.surface}'
+    textColor: '{colors.primary}'
+    rounded: 12px
+    padding: 16px
 ---
+
 ## Overview
 
-Clean research-console aesthetic: bright paper, thin hairlines, matrix-green for model responses.
+Stripe Slate & Cobalt draws on Stripe, Retool, Airplane, and Tailwind UI for a clear, trustworthy B2B Fintech and SaaS interface.
+Cool Slate backgrounds and thin borders frame white surfaces, with Cobalt marking the actions and selections that matter.
+The palette suits product roadmaps presented to executives, investors, and enterprise customers.
 
 ## Colors
 
-The palette is built around high-contrast neutrals and a single accent that drives interaction.
-
-- **Primary (`#0F1112`):** Headlines and core text.
-- **Secondary (`#6F7478`):** Borders, captions, and metadata.
-- **Tertiary (`#00A36C`):** The sole driver for interaction. Reserve it.
-- **Neutral (`#FAFAF8`):** The page foundation.
+- **Primary `#0F172A`** for headings and core text.
+- **Secondary `#64748B`** for descriptions, labels, and metadata.
+- **Tertiary `#2563EB`** for primary buttons, connection points, and selected node borders, with `#1D4ED8` on hover for buttons and connection points.
+- **Neutral `#F8FAFC`** for the roadmap canvas.
+- **Surface `#FFFFFF`** for nodes, cards, and other raised surfaces.
+- **Border `#E2E8F0`** for node outlines and dividers.
+- **Edge `#94A3B8`** for connectors, switching to Cobalt `#2563EB` when selected.
 
 ## Typography
 
-- **display:** IBM Plex Sans 3.5rem
-- **h1:** IBM Plex Sans 2rem
-- **body:** IBM Plex Sans 0.95rem
-- **label:** IBM Plex Mono 0.72rem
+- **Display** uses system sans at `1.875rem` and weight 700.
+- **Heading** uses system sans at `1.5rem` and weight 700.
+- **Body** uses system sans at `0.875rem` with a line height of 1.55.
+- **Label** uses system monospace at `0.72rem` for compact metadata.
 
 ## Do's and Don'ts
 
-- **Do** use Tertiary for exactly one action per screen.
-- **Do** let Neutral carry the composition — negative space is a feature.
-- **Don't** introduce gradients. This system is flat on purpose.
-- **Don't** mix Tertiary with alternate accents; the single-accent rule is load-bearing.
+- **Do** reserve solid Cobalt for the main action and use it to mark selected nodes or edges.
+- **Do** use white surfaces and thin Slate borders to keep the graph legible.
+- **Do** provide visible keyboard focus and label interactive controls.
+- **Avoid** gradients and competing accent colors.
