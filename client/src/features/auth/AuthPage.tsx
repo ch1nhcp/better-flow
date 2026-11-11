@@ -121,7 +121,7 @@ export function AuthPage({ mode }: { mode: keyof typeof copy }) {
             setFormError('Không thể lưu phiên đăng nhập. Hãy kiểm tra cài đặt trình duyệt.');
             return;
           }
-          void navigate('/dashboard', { replace: true });
+          void navigate('/roadmaps', { replace: true });
         },
         onError: (error) => {
           setFormError(
@@ -134,7 +134,7 @@ export function AuthPage({ mode }: { mode: keyof typeof copy }) {
     );
   }
 
-  if (session.token && user.data) return <Navigate to="/dashboard" replace />;
+  if (session.token && user.data) return <Navigate to="/roadmaps" replace />;
 
   return (
     <main className="auth-screen">

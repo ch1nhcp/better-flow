@@ -1,155 +1,3 @@
-.workspace {
-  display: flex;
-  flex-direction: column;
-  min-height: 100svh;
-}
-
-.workspace-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-md);
-  min-height: 60px;
-  padding: 10px 24px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.workspace-brand,
-.workspace-user-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.workspace-brand > span {
-  color: var(--color-secondary);
-  font-size: 0.8125rem;
-}
-
-.workspace-brand > span::before {
-  content: '·';
-  margin-right: 12px;
-}
-
-.workspace-user-chip,
-.workspace-account-card {
-  padding: 4px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-neutral);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-
-.workspace-user-chip > span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #00845f;
-  flex: none;
-}
-
-.workspace-body {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  flex: 1;
-}
-
-.workspace-sidebar {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-lg);
-  padding: var(--space-md);
-  border-right: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.workspace-sidebar nav {
-  display: grid;
-  gap: var(--space-xs);
-}
-
-.workspace-sidebar nav p {
-  padding: 0 10px 4px;
-  color: var(--color-secondary);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-.workspace-sidebar nav a,
-.workspace-sidebar nav button,
-.workspace-account > button,
-.workspace-account > a {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  padding: 6px 10px;
-  background: transparent;
-  color: var(--color-secondary);
-  text-align: left;
-  font: 500 0.8125rem var(--font-sans);
-}
-
-.workspace-sidebar [aria-current='page'] {
-  border-color: var(--color-accent-border);
-  background: var(--color-accent-soft);
-  color: var(--color-accent-hover);
-  font-weight: 600;
-}
-
-.workspace-sidebar nav small {
-  margin-left: auto;
-  white-space: nowrap;
-  font-size: 0.6875rem;
-}
-
-.workspace-account {
-  display: grid;
-  gap: var(--space-sm);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--color-border);
-}
-
-.workspace-account-card {
-  display: grid;
-  gap: 2px;
-  padding: 6px 12px;
-}
-
-.workspace-account-card > span {
-  color: var(--color-secondary);
-  font: var(--font-label) var(--font-mono);
-}
-
-.workspace-account > button,
-.workspace-account > a {
-  cursor: pointer;
-}
-
-.workspace-account > button:hover,
-.workspace-account > a:hover {
-  background: var(--color-neutral);
-  color: var(--color-primary);
-}
-
-.workspace-main {
-  min-width: 0;
-  padding: clamp(20px, 3vw, 36px) clamp(16px, 3vw, 32px);
-}
-
-.workspace-content {
-  width: min(100%, 1152px);
-  margin: 0 auto;
-}
-
 .workspace-heading,
 .workspace-toolbar {
   display: flex;
@@ -300,9 +148,101 @@
   padding: var(--space-md);
 }
 
+.roadmap-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
 .roadmap-details h2 {
+  flex: 1;
+  min-width: 0;
   font-size: 0.9375rem;
   overflow-wrap: anywhere;
+}
+
+.roadmap-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-secondary);
+  cursor: pointer;
+}
+
+.roadmap-menu-trigger:hover,
+.roadmap-menu-trigger[aria-expanded='true'] {
+  border-color: var(--color-border);
+  background: var(--color-neutral);
+  color: var(--color-primary);
+}
+
+[popover].roadmap-menu {
+  min-width: 132px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.12);
+}
+
+[popover].roadmap-menu:popover-open {
+  display: grid;
+  gap: 2px;
+}
+
+@supports (position-area: block-end) {
+  [popover].roadmap-menu {
+    inset: auto;
+    margin: 4px 0 0;
+    position-area: block-end span-inline-start;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+  }
+}
+
+@supports not (position-area: block-end) {
+  [popover].roadmap-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+  }
+}
+
+.roadmap-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-primary);
+  font: 500 0.8125rem var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.roadmap-menu-item:hover {
+  background: var(--color-neutral);
+}
+
+.roadmap-menu-item.danger {
+  color: #b91c1c;
+}
+
+.roadmap-menu-item.danger:hover {
+  background: #fef2f2;
 }
 
 .roadmap-details > p {
@@ -360,30 +300,6 @@
 @media (max-width: 1120px) {
   .roadmap-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  .workspace-header {
-    padding: 10px var(--space-md);
-  }
-
-  .workspace-brand > span {
-    display: none;
-  }
-
-  .workspace-body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .workspace-sidebar {
-    gap: var(--space-md);
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .workspace-account {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
