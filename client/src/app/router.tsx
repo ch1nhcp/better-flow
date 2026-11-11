@@ -1,6 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AuthPage } from '../features/auth/AuthPage';
-import { DemoWorkspacePage, WorkspacePage } from '../features/workspace/WorkspacePage';
+import { WorkspacePage } from '../features/workspace/WorkspacePage';
 import { Layout, StartPage } from './Layout';
 import { NotFoundPage, RouteErrorPage } from './pages';
 
@@ -12,8 +12,7 @@ export const router = createBrowserRouter([
       { index: true, element: <StartPage /> },
       { path: 'login', element: <AuthPage key="login" mode="login" /> },
       { path: 'register', element: <AuthPage key="register" mode="register" /> },
-      { path: 'dashboard', element: <WorkspacePage /> },
-      { path: 'demo', element: <DemoWorkspacePage /> },
+      { path: 'roadmaps', element: <WorkspacePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

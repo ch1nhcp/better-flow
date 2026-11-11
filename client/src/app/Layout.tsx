@@ -12,5 +12,5 @@ export function Layout() {
 
 export function StartPage() {
   const session = useSession();
-  return <Navigate to={session.token ? '/dashboard' : '/login'} replace />;
+  return <Navigate to={session.token ? '/roadmaps' : '/login'} replace />;
 }
