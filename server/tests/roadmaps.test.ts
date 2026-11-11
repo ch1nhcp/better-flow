@@ -164,12 +164,14 @@ describe('Roadmap API Validation', () => {
 
 describe('Roadmap API Business Logic & Authorization', () => {
   it('GET /api/roadmaps lists summaries for the authenticated user', async () => {
+    const previewNodes = [{ id: 'node-1', label: 'Web basics' }];
     database.query.mockResolvedValueOnce({
       rows: [
         {
           id: 10,
           title: 'My Frontend Path',
           node_count: 5,
+          preview_nodes: previewNodes,
           is_public: true,
           share_code: 'k8f2xq',
           created_at: new Date('2026-11-04T07:10:00.000Z'),
@@ -188,6 +190,7 @@ describe('Roadmap API Business Logic & Authorization', () => {
         id: 10,
         title: 'My Frontend Path',
         nodeCount: 5,
+        previewNodes,
         isPublic: true,
         shareCode: 'k8f2xq',
         createdAt: '2026-11-04T07:10:00.000Z',
