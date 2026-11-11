@@ -17,6 +17,7 @@ interface RoadmapSummaryResponse {
 }
 
 export interface RoadmapItem {
+  id: number;
   title: string;
   description: string | null;
   updatedAt: string;
@@ -35,6 +36,7 @@ export async function getRoadmaps(signal?: AbortSignal): Promise<RoadmapItem[]> 
   }
 
   return response.data.roadmaps.map((roadmap) => ({
+    id: roadmap.id,
     title: roadmap.title,
     description: null,
     updatedAt: roadmap.updatedAt,

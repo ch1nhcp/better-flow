@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from 'react';
-import type { ToggleEvent } from 'react';
+import type { FormEvent, ToggleEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Brand } from '../../app/Brand';
 import { Icon } from '../../app/Icon';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
@@ -14,7 +14,13 @@ import './workspace.css';
 
 const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' });
 
-function RoadmapCard({ roadmap }: { roadmap: RoadmapItem }) {
+function RoadmapCard({
+  roadmap,
+  onOpenDetail,
+}: {
+  roadmap: RoadmapItem;
+  onOpenDetail: (roadmap: RoadmapItem) => void;
+}) {
   const menuId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -49,8 +55,8 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapItem }) {
       <div className="roadmap-thumbnail">
         <span className="step-count">{roadmap.steps.length} bước</span>
         <ol>
-          {roadmap.steps.slice(0, 3).map((step) => (
-            <li key={step} title={step}>
+          {roadmap.steps.slice(0, 3).map((step, index) => (
+            <li key={`${roadmap.id}-step-${index}`} title={step}>
               {step}
             </li>
           ))}
@@ -59,7 +65,15 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapItem }) {
       </div>
       <div className="roadmap-details">
         <div className="roadmap-title-row">
-          <h2>{roadmap.title}</h2>
+          <h2>
+            <Link
+              className="card-link"
+              to={`/roadmaps/${roadmap.id}`}
+              state={{ title: roadmap.title }}
+            >
+              {roadmap.title}
+            </Link>
+          </h2>
           <button
             ref={triggerRef}
             type="button"
@@ -82,8 +96,8 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapItem }) {
               type="button"
               className="roadmap-menu-item"
               onClick={() => {
-                console.log('Chi tiết roadmap:', roadmap);
                 menuRef.current?.hidePopover();
+                onOpenDetail(roadmap);
               }}
             >
               Chi tiết
@@ -113,8 +127,26 @@ function RoadmapCard({ roadmap }: { roadmap: RoadmapItem }) {
   );
 }
 
+function validateRoadmapTitle(raw: string): string | null {
+  if (/[\r\n]/.test(raw)) return 'Tên roadmap phải nằm trên một dòng.';
+  const trimmed = raw.trim();
+  const len = [...trimmed].length;
+  if (len < 1) return 'Vui lòng nhập tên roadmap.';
+  if (len > 255) return 'Tên roadmap tối đa 255 ký tự.';
+  return null;
+}
+
 function Workspace({ account }: { account: WorkspaceAccount }) {
   const [sort, setSort] = useState('recent');
+  const [newTitle, setNewTitle] = useState('');
+  const [titleError, setTitleError] = useState('');
+  const navigate = useNavigate();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogTitleId = useId();
+  const inputId = useId();
+  const helpId = useId();
+  const errorId = useId();
   const session = useSession();
   const roadmapsQuery = useQuery({
     queryKey: ['private', 'roadmaps', session.version],
@@ -127,6 +159,33 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
       ? a.updatedAt.localeCompare(b.updatedAt)
       : b.updatedAt.localeCompare(a.updatedAt);
   });
+
+  function openCreateDialog() {
+    setNewTitle('');
+    setTitleError('');
+    dialogRef.current?.showModal();
+    inputRef.current?.focus();
+  }
+
+  function closeCreateDialog() {
+    dialogRef.current?.close();
+    setNewTitle('');
+    setTitleError('');
+  }
+
+  function handleCreateSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const error = validateRoadmapTitle(newTitle);
+    if (error) {
+      setTitleError(error);
+      inputRef.current?.focus();
+      return;
+    }
+    const trimmed = newTitle.trim();
+    closeCreateDialog();
+    void navigate('/roadmaps/new', { state: { title: trimmed } });
+  }
+
   return (
     <WorkspaceShell
       account={account}
@@ -137,13 +196,10 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
           <h1>Roadmap của tôi</h1>
           <p>Lưu giữ và chia sẻ những lộ trình bạn xây dựng.</p>
         </div>
-        <button className="button" type="button" disabled aria-describedby="workspace-notice">
+        <button className="button" type="button" onClick={openCreateDialog}>
           <Icon name="plus" /> Tạo roadmap
         </button>
       </div>
-      <p id="workspace-notice" className="workspace-demo-notice">
-        Tạo và lưu roadmap sắp có.
-      </p>
       <div className="workspace-toolbar">
         <span>{roadmaps.length} roadmap</span>
         <label>
@@ -157,9 +213,67 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
       </div>
       <ul className="roadmap-grid" aria-label="Danh sách roadmap">
         {roadmaps.map((roadmap) => (
-          <RoadmapCard key={roadmap.title} roadmap={roadmap} />
+          <RoadmapCard
+            key={roadmap.id}
+            roadmap={roadmap}
+            onOpenDetail={(item) => {
+              void navigate(`/roadmaps/${item.id}`, { state: { title: item.title } });
+            }}
+          />
         ))}
       </ul>
+      <dialog
+        ref={dialogRef}
+        className="create-roadmap-dialog"
+        aria-labelledby={dialogTitleId}
+        closedby="any"
+        onClose={() => {
+          setNewTitle('');
+          setTitleError('');
+        }}
+      >
+        <form className="create-roadmap-form" onSubmit={handleCreateSubmit} noValidate>
+          <h2 id={dialogTitleId}>Tạo roadmap mới</h2>
+          <div className="create-roadmap-field">
+            <label htmlFor={inputId}>
+              Tên roadmap <span aria-hidden="true">*</span>
+            </label>
+            <input
+              ref={inputRef}
+              id={inputId}
+              name="title"
+              type="text"
+              placeholder="Onboarding Frontend"
+              value={newTitle}
+              maxLength={255}
+              required
+              aria-invalid={Boolean(titleError)}
+              aria-describedby={titleError ? `${helpId} ${errorId}` : helpId}
+              onChange={(event) => {
+                const value = event.currentTarget.value;
+                setNewTitle(value);
+                if (titleError && !validateRoadmapTitle(value)) setTitleError('');
+              }}
+            />
+            <p id={helpId} className="create-roadmap-help">
+              Bắt buộc · Tối đa 255 ký tự
+            </p>
+            {titleError && (
+              <p id={errorId} className="create-roadmap-error" role="alert">
+                {titleError}
+              </p>
+            )}
+          </div>
+          <div className="create-roadmap-actions">
+            <button type="button" className="secondary-button" onClick={closeCreateDialog}>
+              Hủy
+            </button>
+            <button type="submit" className="button">
+              Tạo roadmap
+            </button>
+          </div>
+        </form>
+      </dialog>
     </WorkspaceShell>
   );
 }

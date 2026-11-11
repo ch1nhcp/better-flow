@@ -1,0 +1,419 @@
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  min-height: 540px;
+}
+
+.editor-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.editor-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+}
+
+.editor-back-link:hover {
+  border-color: var(--color-border);
+  background: var(--color-neutral);
+}
+
+.editor-title-meta {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.editor-title-input {
+  min-width: 140px;
+  max-width: min(42vw, 380px);
+  padding: 2px 6px;
+  margin-left: -6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary);
+  font: 600 0.9375rem var(--font-sans);
+}
+
+.editor-title-input:hover {
+  border-color: var(--color-border);
+}
+
+.editor-title-input:focus {
+  border-color: var(--color-tertiary);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.editor-save-status {
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.editor-save-status.dirty {
+  color: #b45309;
+}
+
+.editor-save-status.error {
+  color: #b91c1c;
+}
+
+.editor-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.editor-header-btn {
+  min-height: 34px;
+  padding: 5px 12px;
+  font-size: 0.8125rem;
+}
+
+.editor-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  flex: 1;
+  min-height: 0;
+}
+
+.editor-canvas-pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-neutral);
+}
+
+.editor-canvas-top {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.editor-add-btn {
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+}
+
+.editor-node-count {
+  color: var(--color-secondary);
+  font: 0.75rem var(--font-mono);
+}
+
+.editor-canvas-bottom {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.editor-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font: 500 0.8125rem var(--font-sans);
+  cursor: pointer;
+}
+
+.editor-zoom-btn:hover {
+  background: var(--color-neutral);
+}
+
+.editor-zoom-value {
+  min-width: 44px;
+  text-align: center;
+  color: var(--color-primary);
+  font: 500 0.75rem var(--font-mono);
+}
+
+.editor-canvas-hint {
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+}
+
+.editor-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: 20px;
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface);
+  overflow-y: auto;
+}
+
+.editor-inspector-head h2 {
+  font-size: 1rem;
+}
+
+.editor-inspector-head p {
+  margin-top: 2px;
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.editor-inspector-form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.editor-field {
+  display: grid;
+  gap: 6px;
+}
+
+.editor-field label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.editor-field input,
+.editor-field textarea,
+.editor-field select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.editor-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.editor-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-tertiary);
+}
+
+.editor-edge-type-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+}
+
+.editor-edge-type-select {
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font: inherit;
+}
+
+.editor-field textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.editor-field-meta {
+  color: var(--color-secondary);
+  font: 0.75rem var(--font-mono);
+}
+
+.editor-field-error {
+  color: #b91c1c;
+  font-size: 0.8125rem;
+}
+
+.editor-inspector-actions {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.editor-inspector-note {
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+}
+
+.editor-empty-inspector {
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+}
+
+.editor-state-screen {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  padding: var(--space-lg);
+}
+
+.editor-state-card {
+  display: grid;
+  gap: var(--space-md);
+  max-width: 440px;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  text-align: center;
+}
+
+/* Custom React Flow node */
+.react-flow__node-default {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: auto;
+  box-shadow: none;
+}
+
+.roadmap-step-node {
+  min-width: 210px;
+  max-width: 280px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  text-align: left;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.04);
+}
+
+.roadmap-step-node.selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.roadmap-step-node-body {
+  display: grid;
+  gap: 4px;
+}
+
+.roadmap-step-node-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.roadmap-step-node-desc {
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.roadmap-step-handle {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--color-secondary);
+  background: var(--color-surface);
+}
+
+.react-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 1.75;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--color-tertiary);
+  stroke-width: 2.5;
+}
+
+.editor-leave-dialog {
+  width: min(100% - 32px, 420px);
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: 0 20px 48px rgb(15 23 42 / 0.16);
+}
+
+.editor-leave-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+.editor-leave-dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgb(15 23 42 / 0.35);
+}
+
+.editor-leave-content {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.editor-leave-content h2 {
+  font-size: 1.125rem;
+}
+
+.editor-leave-content p {
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+}
+
+.editor-leave-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+@media (max-width: 900px) {
+  .editor-page {
+    height: auto;
+    min-height: 100svh;
+  }
+
+  .editor-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .editor-canvas-pane {
+    height: 60svh;
+    min-height: 360px;
+  }
+
+  .editor-inspector {
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+  }
+}
