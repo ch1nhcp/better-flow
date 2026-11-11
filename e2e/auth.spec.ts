@@ -182,7 +182,7 @@ test('displays and sorts user roadmaps from GET /api/roadmaps', async ({ page },
   const heading = page.getByRole('heading', { name: 'Roadmap của tôi' });
   await expect(heading).toHaveCSS('font-family', /Segoe UI/);
   await expect(heading).toHaveCSS('font-weight', '700');
-  await expect(page.getByRole('button', { name: 'Tạo roadmap' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Tạo roadmap' })).toBeEnabled();
   const headings = page.getByRole('list', { name: 'Danh sách roadmap' }).getByRole('heading');
   await expect(headings).toHaveText([
     'Onboarding Frontend',
@@ -202,14 +202,174 @@ test('displays and sorts user roadmaps from GET /api/roadmaps', async ({ page },
   await page.getByRole('button', { name: 'Tùy chọn cho Onboarding Frontend' }).click();
   await expect(page.getByRole('button', { name: 'Chi tiết' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xóa' })).toBeVisible();
-  await page.getByRole('button', { name: 'Chi tiết' }).click();
-  await expect(page.getByRole('button', { name: 'Chi tiết' })).toBeHidden();
-  await page.getByRole('button', { name: 'Tùy chọn cho Onboarding Frontend' }).click();
   await page.getByRole('button', { name: 'Xóa' }).click();
-  expect(logs).toEqual([
-    expect.stringContaining('Chi tiết roadmap:'),
-    expect.stringContaining('Xóa roadmap:'),
-  ]);
+  await expect(page.getByRole('button', { name: 'Xóa' })).toBeHidden();
+  expect(logs).toEqual([expect.stringContaining('Xóa roadmap:')]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('dashboard.png'), fullPage: true });
+});
+
+test('creates a roadmap on /roadmaps/new and edits an existing roadmap on /roadmaps/:id', async ({
+  page,
+}) => {
+  const token = tokenFor(Math.floor(Date.now() / 1000) + 3600);
+  const existingRoadmap = {
+    id: 10,
+    userId: 1,
+    title: 'Onboarding Frontend',
+    nodes: [
+      {
+        id: 'node-1',
+        type: 'default',
+        position: { x: 100, y: 50 },
+        data: { label: '01 Chuẩn bị môi trường', description: 'Cài Git và Node.js' },
+      },
+      {
+        id: 'node-2',
+        type: 'default',
+        position: { x: 100, y: 200 },
+        data: { label: '02 TypeScript' },
+      },
+    ],
+    edges: [
+      {
+        id: 'edge-node-1-node-2',
+        source: 'node-1',
+        target: 'node-2',
+        type: 'smoothstep',
+        animated: false,
+      },
+    ],
+    isPublic: false,
+    shareCode: null,
+    createdAt: '2026-11-01T09:00:00.000Z',
+    updatedAt: '2026-11-09T18:30:00.000Z',
+  };
+
+  await mockCurrentUser(page, token);
+  await mockRoadmaps(page, token);
+  await page.route('**/api/roadmaps', async (route) => {
+    if (route.request().method() === 'POST') {
+      const body = route.request().postDataJSON();
+      expect(body).toEqual({
+        title: 'Lộ trình React',
+        nodes: [
+          {
+            id: 'node-1',
+            type: 'default',
+            position: { x: 240, y: 120 },
+            data: { label: 'Nền tảng TypeScript', description: 'Kiểu dữ liệu và hàm' },
+          },
+        ],
+        edges: [],
+      });
+      await route.fulfill({
+        status: 201,
+        json: {
+          data: {
+            roadmap: {
+              ...existingRoadmap,
+              id: 25,
+              title: body.title,
+              nodes: body.nodes,
+              edges: body.edges,
+            },
+          },
+        },
+      });
+      return;
+    }
+    await route.fulfill({ json: { data: { roadmaps: sampleRoadmaps } } });
+  });
+
+  await page.route('**/api/roadmaps/10', async (route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({ json: { data: { roadmap: existingRoadmap } } });
+      return;
+    }
+    if (method === 'PUT') {
+      const body = route.request().postDataJSON();
+      expect(body).toEqual({ title: 'Onboarding Frontend v2' });
+      await route.fulfill({
+        json: {
+          data: {
+            roadmap: {
+              ...existingRoadmap,
+              title: body.title,
+            },
+          },
+        },
+      });
+    }
+  });
+
+  await page.goto('/login');
+  await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
+    key: storageKey,
+    value: token,
+  });
+
+  await page.goto('/roadmaps');
+  await page.getByRole('button', { name: 'Tạo roadmap' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Tạo roadmap' }).click();
+  await expect(dialog.getByRole('alert')).toHaveText('Vui lòng nhập tên roadmap.');
+
+  await dialog.getByLabel('Tên roadmap').fill('Lộ trình React');
+  await dialog.getByRole('button', { name: 'Tạo roadmap' }).click();
+
+  await expect(page).toHaveURL('/roadmaps/new');
+  await expect(page.getByLabel('Tên roadmap')).toHaveValue('Lộ trình React');
+  await expect(page.getByText('Có thay đổi chưa lưu', { exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Thêm bước' }).click();
+  await page.getByLabel('Tên bước').fill('Nền tảng TypeScript');
+  await page.getByLabel('Mô tả (không bắt buộc)').fill('Kiểu dữ liệu và hàm');
+  await page.getByRole('button', { name: 'Áp dụng' }).click();
+  await page.getByRole('button', { name: 'Lưu' }).click();
+
+  await expect(page).toHaveURL('/roadmaps/25');
+  await expect(page.getByText('Đã lưu')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Quay lại danh sách roadmap' }).click();
+  await expect(page).toHaveURL('/roadmaps');
+  const firstCard = page
+    .getByRole('list', { name: 'Danh sách roadmap' })
+    .locator('li.roadmap-card')
+    .first();
+  await expect(firstCard).toHaveCSS('cursor', 'pointer');
+  const cardBox = await firstCard.boundingBox();
+  expect(cardBox).not.toBeNull();
+  await page.mouse.click(cardBox!.x + 30, cardBox!.y + 30);
+
+  await expect(page).toHaveURL('/roadmaps/10');
+  await expect(page.getByLabel('Tên roadmap')).toHaveValue('Onboarding Frontend');
+  await expect(page.getByText('Đã lưu')).toBeVisible();
+
+  const editorLogs: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'log') editorLogs.push(message.text());
+  });
+  await page.getByRole('button', { name: 'Tải xuống' }).click();
+  await page.getByRole('button', { name: 'Chia sẻ' }).click();
+  expect(editorLogs).toEqual([
+    expect.stringContaining('Tải xuống roadmap:'),
+    expect.stringContaining('Chia sẻ roadmap:'),
+  ]);
+
+  await page.getByLabel('Tên roadmap').fill('Onboarding Frontend v2');
+  await expect(page.getByText('Có thay đổi chưa lưu', { exact: true })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Quay lại danh sách roadmap' }).click();
+  const leaveDialog = page.getByRole('dialog');
+  await expect(leaveDialog).toBeVisible();
+  await leaveDialog.getByRole('button', { name: 'Ở lại trang' }).click();
+  await expect(page).toHaveURL('/roadmaps/10');
+
+  await page.getByRole('button', { name: 'Lưu' }).click();
+  await expect(page.getByText('Đã lưu')).toBeVisible();
+  await page.getByRole('link', { name: 'Quay lại danh sách roadmap' }).click();
+  await expect(page).toHaveURL('/roadmaps');
 });

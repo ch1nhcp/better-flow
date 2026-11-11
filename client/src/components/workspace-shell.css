@@ -17,11 +17,16 @@
 }
 
 .workspace-brand,
-.workspace-user-chip {
+.workspace-user-chip,
+.workspace-header-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
+}
+
+.workspace-header-actions {
+  flex-wrap: wrap;
 }
 
 .workspace-header-slot {

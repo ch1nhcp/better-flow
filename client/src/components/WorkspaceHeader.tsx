@@ -4,10 +4,11 @@ import './workspace-shell.css';
 
 export interface WorkspaceHeaderProps {
   accountEmail?: string | undefined;
+  actions?: ReactNode | undefined;
   children?: ReactNode | undefined;
 }
 
-export function WorkspaceHeader({ accountEmail, children }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ accountEmail, actions, children }: WorkspaceHeaderProps) {
   const slotContent =
     children === undefined ? (
       <span className="workspace-header-default">Không gian làm việc</span>
@@ -23,11 +24,15 @@ export function WorkspaceHeader({ accountEmail, children }: WorkspaceHeaderProps
           <div className="workspace-header-slot">{slotContent}</div>
         )}
       </div>
-      {accountEmail && (
-        <p className="workspace-user-chip">
-          <span aria-hidden="true" />
-          {accountEmail}
-        </p>
+      {actions ? (
+        <div className="workspace-header-actions">{actions}</div>
+      ) : (
+        accountEmail && (
+          <p className="workspace-user-chip">
+            <span aria-hidden="true" />
+            {accountEmail}
+          </p>
+        )
       )}
     </header>
   );
