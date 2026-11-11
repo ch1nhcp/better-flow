@@ -340,7 +340,9 @@ test('creates a roadmap on /roadmaps/new and edits an existing roadmap on /roadm
     .locator('li.roadmap-card')
     .first();
   await expect(firstCard).toHaveCSS('cursor', 'pointer');
-  await firstCard.locator('.roadmap-thumbnail').click();
+  const cardBox = await firstCard.boundingBox();
+  expect(cardBox).not.toBeNull();
+  await page.mouse.click(cardBox!.x + 30, cardBox!.y + 30);
 
   await expect(page).toHaveURL('/roadmaps/10');
   await expect(page.getByLabel('Tên roadmap')).toHaveValue('Onboarding Frontend');

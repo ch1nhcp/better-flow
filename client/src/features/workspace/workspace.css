@@ -71,8 +71,7 @@
   cursor: pointer;
   transition:
     border-color 140ms ease,
-    box-shadow 140ms ease,
-    transform 140ms ease;
+    box-shadow 140ms ease;
 }
 
 .roadmap-card a.card-link::after {
@@ -94,7 +93,6 @@
 .roadmap-card:hover {
   border-color: var(--color-tertiary);
   box-shadow: 0 8px 20px rgb(15 23 42 / 0.08);
-  transform: translateY(-2px);
 }
 
 .roadmap-card button {
@@ -416,10 +414,5 @@
 @media (prefers-reduced-motion: reduce) {
   .roadmap-card {
     transition: none;
-  }
-
-  .roadmap-card:has(a.card-link:hover),
-  .roadmap-card:hover {
-    transform: none;
   }
 }
