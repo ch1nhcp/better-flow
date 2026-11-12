@@ -171,8 +171,19 @@ test('ends a session at JWT expiry without waiting for another request', async (
 
 test('displays and sorts user roadmaps from GET /api/roadmaps', async ({ page }, testInfo) => {
   const token = tokenFor(Math.floor(Date.now() / 1000) + 3600);
+  let roadmaps = [...sampleRoadmaps];
   await mockCurrentUser(page, token);
-  await mockRoadmaps(page, token);
+  await page.route('**/api/roadmaps', async (route) => {
+    expect(route.request().method()).toBe('GET');
+    expect(route.request().headers().authorization).toBe(`Bearer ${token}`);
+    await route.fulfill({ json: { data: { roadmaps } } });
+  });
+  await page.route('**/api/roadmaps/10', async (route) => {
+    expect(route.request().method()).toBe('DELETE');
+    expect(route.request().headers().authorization).toBe(`Bearer ${token}`);
+    roadmaps = roadmaps.filter((item) => item.id !== 10);
+    await route.fulfill({ json: { data: { message: 'Đã xóa roadmap thành công' } } });
+  });
   await page.goto('/login');
   await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
     key: storageKey,
@@ -196,16 +207,27 @@ test('displays and sorts user roadmaps from GET /api/roadmaps', async ({ page },
     'Nền tảng Backend',
     'Onboarding Frontend',
   ]);
-  const logs: string[] = [];
-  page.on('console', (message) => {
-    if (message.type() === 'log') logs.push(message.text());
-  });
   await page.getByRole('button', { name: 'Tùy chọn cho Onboarding Frontend' }).click();
   await expect(page.getByRole('button', { name: 'Chi tiết' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Xóa' })).toBeVisible();
-  await page.getByRole('button', { name: 'Xóa' }).click();
-  await expect(page.getByRole('button', { name: 'Xóa' })).toBeHidden();
-  expect(logs).toEqual([expect.stringContaining('Xóa roadmap:')]);
+  await expect(page.getByRole('button', { name: 'Xóa', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Xóa', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Xóa', exact: true })).toBeHidden();
+  const deleteDialog = page.getByRole('dialog', { name: 'Xóa roadmap?' });
+  await expect(deleteDialog).toBeVisible();
+  await deleteDialog.getByRole('button', { name: 'Hủy' }).click();
+  await expect(deleteDialog).toBeHidden();
+  await expect(headings).toHaveText([
+    'Lộ trình thực tập sinh',
+    'Nền tảng Backend',
+    'Onboarding Frontend',
+  ]);
+
+  await page.getByRole('button', { name: 'Tùy chọn cho Onboarding Frontend' }).click();
+  await page.getByRole('button', { name: 'Xóa', exact: true }).click();
+  await expect(deleteDialog).toBeVisible();
+  await deleteDialog.getByRole('button', { name: 'Xóa roadmap' }).click();
+  await expect(deleteDialog).toBeHidden();
+  await expect(headings).toHaveText(['Lộ trình thực tập sinh', 'Nền tảng Backend']);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('dashboard.png'), fullPage: true });
 });

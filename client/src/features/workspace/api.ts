@@ -48,3 +48,10 @@ export async function getRoadmaps(signal?: AbortSignal): Promise<RoadmapItem[]> 
       : [],
   }));
 }
+
+export async function deleteRoadmap(id: number): Promise<void> {
+  await apiRequest<{ data: { message: string } }>(`/roadmaps/${id}`, {
+    method: 'DELETE',
+    authenticated: true,
+  });
+}

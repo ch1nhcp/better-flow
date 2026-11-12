@@ -1,15 +1,16 @@
 import { useId, useRef, useState } from 'react';
 import type { FormEvent, ToggleEvent } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Brand } from '../../app/Brand';
 import { Icon } from '../../app/Icon';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import type { WorkspaceAccount } from '../../components/WorkspaceSidebar';
+import { ApiError } from '../../lib/api';
 import { endSession } from '../../lib/auth-session';
 import { useCurrentUser, useSession } from '../auth/use-session';
 import { maxRoadmapTitleLength, validateRoadmapTitle } from '../roadmap-editor/validation';
-import { getRoadmaps } from './api';
+import { deleteRoadmap, getRoadmaps } from './api';
 import type { RoadmapItem } from './api';
 import './workspace.css';
 
@@ -18,9 +19,13 @@ const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' });
 function RoadmapCard({
   roadmap,
   onOpenDetail,
+  onDelete,
+  isDeleting,
 }: {
   roadmap: RoadmapItem;
   onOpenDetail: (roadmap: RoadmapItem) => void;
+  onDelete: (roadmap: RoadmapItem) => void;
+  isDeleting: boolean;
 }) {
   const menuId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -106,9 +111,10 @@ function RoadmapCard({
             <button
               type="button"
               className="roadmap-menu-item danger"
+              disabled={isDeleting}
               onClick={() => {
-                console.log('Xóa roadmap:', roadmap);
                 menuRef.current?.hidePopover();
+                onDelete(roadmap);
               }}
             >
               Xóa
@@ -132,18 +138,46 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
   const [sort, setSort] = useState('recent');
   const [newTitle, setNewTitle] = useState('');
   const [titleError, setTitleError] = useState('');
+  const [pendingDelete, setPendingDelete] = useState<RoadmapItem | null>(null);
+  const [deleteError, setDeleteError] = useState('');
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const deleteDialogRef = useRef<HTMLDialogElement>(null);
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
   const dialogTitleId = useId();
   const inputId = useId();
   const helpId = useId();
   const errorId = useId();
+  const deleteDialogTitleId = useId();
+  const deleteDialogDescId = useId();
   const session = useSession();
+  const queryClient = useQueryClient();
   const roadmapsQuery = useQuery({
     queryKey: ['private', 'roadmaps', session.version],
     queryFn: ({ signal }) => getRoadmaps(signal),
     enabled: session.token !== null,
+  });
+  const deleteMutation = useMutation({
+    mutationFn: deleteRoadmap,
+    onMutate: () => {
+      setDeleteError('');
+    },
+    onSuccess: (_data, deletedId) => {
+      deleteDialogRef.current?.close();
+      setPendingDelete(null);
+      setDeleteError('');
+      queryClient.setQueryData<RoadmapItem[]>(['private', 'roadmaps', session.version], (current) =>
+        current?.filter((item) => item.id !== deletedId),
+      );
+      void queryClient.invalidateQueries({ queryKey: ['private', 'roadmaps'] });
+      queryClient.removeQueries({ queryKey: ['private', 'roadmap', deletedId] });
+    },
+    onError: (error) => {
+      setDeleteError(
+        error instanceof ApiError ? error.message : 'Không thể xóa roadmap. Vui lòng thử lại.',
+      );
+    },
   });
   const roadmaps = [...(roadmapsQuery.data ?? [])].sort((a, b) => {
     if (sort === 'name') return a.title.localeCompare(b.title, 'vi');
@@ -163,6 +197,20 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
     dialogRef.current?.close();
     setNewTitle('');
     setTitleError('');
+  }
+
+  function openDeleteDialog(roadmap: RoadmapItem) {
+    setPendingDelete(roadmap);
+    setDeleteError('');
+    deleteDialogRef.current?.showModal();
+    cancelDeleteRef.current?.focus();
+  }
+
+  function closeDeleteDialog() {
+    if (deleteMutation.isPending) return;
+    deleteDialogRef.current?.close();
+    setPendingDelete(null);
+    setDeleteError('');
   }
 
   function handleCreateSubmit(event: FormEvent<HTMLFormElement>) {
@@ -211,6 +259,8 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
             onOpenDetail={(item) => {
               void navigate(`/roadmaps/${item.id}`, { state: { title: item.title } });
             }}
+            onDelete={openDeleteDialog}
+            isDeleting={deleteMutation.isPending && deleteMutation.variables === roadmap.id}
           />
         ))}
       </ul>
@@ -265,6 +315,56 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
             </button>
           </div>
         </form>
+      </dialog>
+      <dialog
+        ref={deleteDialogRef}
+        className="create-roadmap-dialog"
+        aria-labelledby={deleteDialogTitleId}
+        aria-describedby={deleteDialogDescId}
+        closedby={deleteMutation.isPending ? 'none' : 'any'}
+        onCancel={(event) => {
+          if (deleteMutation.isPending) event.preventDefault();
+        }}
+        onClose={() => {
+          if (!deleteMutation.isPending) {
+            setPendingDelete(null);
+            setDeleteError('');
+          }
+        }}
+      >
+        <div className="delete-roadmap-body">
+          <h2 id={deleteDialogTitleId}>Xóa roadmap?</h2>
+          <p id={deleteDialogDescId} className="delete-roadmap-desc">
+            Bạn có chắc muốn xóa roadmap <strong>{pendingDelete?.title}</strong>? Hành động này
+            không thể hoàn tác.
+          </p>
+          {deleteError && (
+            <p className="create-roadmap-error" role="alert">
+              {deleteError}
+            </p>
+          )}
+          <div className="create-roadmap-actions">
+            <button
+              ref={cancelDeleteRef}
+              type="button"
+              className="secondary-button"
+              disabled={deleteMutation.isPending}
+              onClick={closeDeleteDialog}
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              className="secondary-button delete-roadmap-confirm"
+              disabled={deleteMutation.isPending || !pendingDelete}
+              onClick={() => {
+                if (pendingDelete) deleteMutation.mutate(pendingDelete.id);
+              }}
+            >
+              {deleteMutation.isPending ? 'Đang xóa…' : 'Xóa roadmap'}
+            </button>
+          </div>
+        </div>
       </dialog>
     </WorkspaceShell>
   );
