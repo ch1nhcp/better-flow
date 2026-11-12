@@ -14,6 +14,18 @@ export const router = createBrowserRouter([
       { path: 'login', element: <AuthPage key="login" mode="login" /> },
       { path: 'register', element: <AuthPage key="register" mode="register" /> },
       { path: 'roadmaps', element: <WorkspacePage /> },
+      {
+        path: 'playground',
+        lazy: async () => {
+          const { PlaygroundPage } = await import('../features/playground/PlaygroundPage');
+          return { Component: PlaygroundPage };
+        },
+        hydrateFallbackElement: (
+          <p className="route-message" role="status">
+            Đang mở Playground…
+          </p>
+        ),
+      },
       { path: 'roadmaps/new', element: <RoadmapEditorPage /> },
       { path: 'roadmaps/:id', element: <RoadmapEditorPage /> },
       { path: '*', element: <NotFoundPage /> },

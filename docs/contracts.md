@@ -409,7 +409,7 @@ flowchart TD
     Parser --> Graph["Tạo RoadmapGraph (Nodes & Edges)"]
     Graph --> Dagre["Auto Layout (Dagre Engine)"]
     Dagre --> RF["React Flow (Live Preview bên phải)"]
-    RF -.->|"Lưu thành roadmap"| SaveAPI["Save API (PUT / POST)"]
+    RF -.->|"Lưu và mở Canvas"| SaveAPI["Tạo roadmap (POST /api/roadmaps)"]
     SaveAPI --> DB[("PostgreSQL (Cột JSONB)")]
 ```
 
@@ -420,7 +420,8 @@ flowchart TD
 3. Tạo mảng `RoadmapNode[]` và `RoadmapEdge[]` đúng chuẩn `@xyflow/react`.
 4. Dagre tính toán tọa độ node theo quy tắc auto layout bên dưới; không thay đổi ID, nội dung hoặc hướng cạnh.
 5. React Flow nhận dữ liệu và cập nhật sơ đồ trực quan theo thời gian thực (debounce 200ms).
-6. Khi người dùng bấm "Lưu thành roadmap", Frontend gửi `{ title, nodes, edges }` lên API tạo mới, hoặc các trường thay đổi hợp lệ lên API cập nhật.
+6. Nút **Lưu thành roadmap** mở hộp thoại cho phép sửa tên và hiển thị số node, số đường nối.
+7. Khi người dùng chọn **Lưu và mở Canvas**, frontend gửi `{ title, nodes, edges }` lên API tạo mới và mở roadmap vừa lưu.
 
 ---
 
@@ -441,7 +442,7 @@ Graph chấp nhận tối đa 500 node và 1.000 cạnh.
 - Khi bản nháp có lỗi, giữ preview hợp lệ gần nhất và hiển thị rõ preview chưa khớp bản nháp; nếu chưa có kết quả hợp lệ thì preview rỗng.
 - Khóa nút lưu và xuất file từ Playground khi bản nháp có lỗi, đang chờ debounce hoặc đang tính layout; không tự lưu hoặc gửi graph hợp lệ cũ thay cho bản nháp lỗi.
 - Bỏ kết quả parse/layout cũ nếu người dùng đã sửa nội dung sau khi tác vụ bắt đầu, để preview luôn tương ứng phiên bản mới nhất.
-- Dagre dùng hướng trái sang phải (`rankdir: LR`), khoảng cách cùng tầng `nodesep: 40`, giữa các tầng `ranksep: 80`, lề `marginx/marginy: 24` pixel.
+- Dagre dùng hướng từ trên xuống (`rankdir: TB`), khoảng cách cùng tầng `nodesep: 40`, giữa các tầng `ranksep: 80`, lề `marginx/marginy: 24` pixel.
 - Dùng kích thước node đã đo; nếu chưa đo thì dùng fallback rộng 240 và cao 100 pixel, đo lại sau render khi kích thước thay đổi.
 - Chuyển tọa độ tâm Dagre sang góc trên trái React Flow bằng cách trừ nửa chiều rộng/chiều cao node; chỉ gọi `fitView` sau khi áp dụng layout hợp lệ.
 - Chu trình không bị xóa hoặc đảo source/target trong graph; việc Dagre xử lý chu trình nội bộ chỉ phục vụ tính bố cục.

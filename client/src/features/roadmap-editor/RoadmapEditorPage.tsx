@@ -5,14 +5,10 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  Background,
-  BackgroundVariant,
-  MarkerType,
   ReactFlow,
   ReactFlowProvider,
-  useReactFlow,
 } from '@xyflow/react';
-import type { Connection, Edge, EdgeChange, NodeChange, Viewport } from '@xyflow/react';
+import type { Connection, Edge, EdgeChange, NodeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Link, Navigate, useBlocker, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Brand } from '../../app/Brand';
@@ -31,6 +27,8 @@ import type {
 } from './api';
 import { RoadmapStepNode } from './RoadmapStepNode';
 import type { RoadmapFlowNode } from './RoadmapStepNode';
+import { RoadmapCanvasBackground, RoadmapViewportControls } from './RoadmapCanvasControls';
+import { roadmapEdgeOptions, roadmapFitOptions } from './roadmap-canvas-options';
 import './roadmap-editor.css';
 
 const maxNodes = 500;
@@ -103,7 +101,6 @@ function toFlowEdges(edges: RoadmapEdgePayload[]): Edge[] {
     target: edge.target,
     type: edge.type === 'default' ? 'default' : 'smoothstep',
     animated: Boolean(edge.animated),
-    markerEnd: { type: MarkerType.ArrowClosed },
   }));
 }
 
@@ -163,6 +160,7 @@ function StepInspectorForm({
   const [fieldError, setFieldError] = useState('');
   const labelInputId = useId();
   const descriptionInputId = useId();
+  const deleteNoteId = useId();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -178,9 +176,14 @@ function StepInspectorForm({
   return (
     <form className="editor-inspector-form" onSubmit={handleSubmit} noValidate>
       <div className="editor-field">
-        <label htmlFor={labelInputId}>
-          Tên bước <span aria-hidden="true">*</span>
-        </label>
+        <div className="editor-field-heading">
+          <label htmlFor={labelInputId}>
+            Tên bước <span aria-hidden="true">*</span>
+          </label>
+          <span className="editor-field-meta">
+            {[...draftLabel].length} / {maxTitleLength}
+          </span>
+        </div>
         <input
           id={labelInputId}
           name="label"
@@ -196,13 +199,15 @@ function StepInspectorForm({
             }
           }}
         />
-        <span className="editor-field-meta">
-          {[...draftLabel].length} / {maxTitleLength} ký tự
-        </span>
       </div>
 
       <div className="editor-field">
-        <label htmlFor={descriptionInputId}>Mô tả (không bắt buộc)</label>
+        <div className="editor-field-heading">
+          <label htmlFor={descriptionInputId}>Mô tả (không bắt buộc)</label>
+          <span className="editor-field-meta">
+            {[...draftDescription].length} / {maxDescriptionLength}
+          </span>
+        </div>
         <textarea
           id={descriptionInputId}
           name="description"
@@ -216,9 +221,6 @@ function StepInspectorForm({
             }
           }}
         />
-        <span className="editor-field-meta">
-          {[...draftDescription].length} / {maxDescriptionLength} ký tự
-        </span>
       </div>
 
       {fieldError && (
@@ -227,15 +229,20 @@ function StepInspectorForm({
         </p>
       )}
 
-      <div className="editor-inspector-actions">
-        <button type="submit" className="button">
-          Áp dụng
+      <button type="submit" className="button">
+        <Icon name="check" /> Áp dụng
+      </button>
+      <div className="editor-step-delete">
+        <button
+          type="button"
+          className="secondary-button editor-delete-step"
+          aria-describedby={deleteNoteId}
+          onClick={onDelete}
+        >
+          <Icon name="trash" /> Xóa bước
         </button>
-        <button type="button" className="secondary-button" onClick={onDelete}>
-          Xóa bước
-        </button>
+        <p id={deleteNoteId}>Xóa bước sẽ xóa toàn bộ các mũi tên kết nối với bước này.</p>
       </div>
-      <p className="editor-inspector-note">Xóa bước cũng xóa các mũi tên nối với bước này.</p>
     </form>
   );
 }
@@ -264,17 +271,18 @@ function EditorCanvas({
   const isNewMode = roadmapId === null;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { fitView, zoomIn, zoomOut } = useReactFlow();
 
   const [title, setTitle] = useState(initialTitle);
-  const [nodes, setNodes] = useState<RoadmapFlowNode[]>(initialNodes);
+  const [nodes, setNodes] = useState<RoadmapFlowNode[]>(() =>
+    initialNodes.map((node, index) => ({ ...node, selected: index === 0 })),
+  );
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [defaultEdgeType, setDefaultEdgeType] = useState<'smoothstep' | 'default'>('smoothstep');
   const [saveError, setSaveError] = useState('');
   const [isDirty, setIsDirty] = useState(initialDirty);
-  const [zoomPercent, setZoomPercent] = useState(100);
+  const inspectorTitleRef = useRef<HTMLHeadingElement>(null);
   const allowNextNavigationRef = useRef(false);
   const leaveDialogRef = useRef<HTMLDialogElement>(null);
   const leaveDialogTitleId = useId();
@@ -380,6 +388,7 @@ function EditorCanvas({
   });
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
+  const saveStatus = saveError ? 'error' : isSaving ? 'saving' : isDirty ? 'dirty' : 'saved';
 
   const handleNodesChange = useCallback((changes: NodeChange<RoadmapFlowNode>[]) => {
     setNodes((prev) => applyNodeChanges(changes, prev));
@@ -420,7 +429,6 @@ function EditorCanvas({
           target: connection.target,
           type: defaultEdgeType,
           animated: false,
-          markerEnd: { type: MarkerType.ArrowClosed },
         };
         return addEdge(newEdge, prev);
       });
@@ -489,6 +497,14 @@ function EditorCanvas({
     setSaveError('');
   }
 
+  function handleCloseInspector() {
+    setNodes((prev) => prev.map((node) => (node.selected ? { ...node, selected: false } : node)));
+    setEdges((prev) => prev.map((edge) => (edge.selected ? { ...edge, selected: false } : edge)));
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+    inspectorTitleRef.current?.focus();
+  }
+
   function handleUpdateSelectedEdge(updates: {
     type?: 'smoothstep' | 'default';
     animated?: boolean;
@@ -546,8 +562,13 @@ function EditorCanvas({
   }
 
   return (
-    <div className="editor-page">
+    <div className="workspace editor-page">
       <WorkspaceHeader
+        leading={
+          <Link className="editor-back-link" to="/roadmaps" aria-label="Quay lại danh sách roadmap">
+            <Icon name="chevronLeft" />
+          </Link>
+        }
         actions={
           <div className="editor-header-actions">
             <button
@@ -562,7 +583,7 @@ function EditorCanvas({
                 });
               }}
             >
-              Tải xuống
+              <Icon name="download" /> Tải xuống
             </button>
             <button
               type="button"
@@ -571,7 +592,7 @@ function EditorCanvas({
                 console.log('Chia sẻ roadmap:', { id: roadmapId, title: title.trim() });
               }}
             >
-              Chia sẻ
+              <Icon name="share" /> Chia sẻ
             </button>
             <button
               type="button"
@@ -579,46 +600,35 @@ function EditorCanvas({
               disabled={isSaving}
               onClick={handleSave}
             >
-              {isSaving ? 'Đang lưu…' : 'Lưu'}
+              <Icon name="save" /> {isSaving ? 'Đang lưu…' : 'Lưu thay đổi'}
             </button>
           </div>
         }
       >
-        <div className="editor-header-title">
-          <Link className="editor-back-link" to="/roadmaps" aria-label="Quay lại danh sách roadmap">
-            <Icon name="chevronLeft" />
-          </Link>
-          <div className="editor-title-meta">
-            <input
-              type="text"
-              className="editor-title-input"
-              aria-label="Tên roadmap"
-              value={title}
-              maxLength={maxTitleLength}
-              onChange={(event) => {
-                setTitle(event.currentTarget.value);
-                setIsDirty(true);
-                setSaveError('');
-              }}
-            />
-            <span
-              className={
-                saveError
-                  ? 'editor-save-status error'
-                  : isDirty
-                    ? 'editor-save-status dirty'
-                    : 'editor-save-status'
-              }
-              role={saveError ? 'alert' : 'status'}
-            >
-              {saveError || (isSaving ? 'Đang lưu…' : isDirty ? 'Có thay đổi chưa lưu' : 'Đã lưu')}
-            </span>
-          </div>
+        <div className="editor-title-meta">
+          <input
+            type="text"
+            className="editor-title-input"
+            aria-label="Tên roadmap"
+            value={title}
+            maxLength={maxTitleLength}
+            onChange={(event) => {
+              setTitle(event.currentTarget.value);
+              setIsDirty(true);
+              setSaveError('');
+            }}
+          />
+          <span
+            className={`editor-save-status ${saveStatus}`}
+            role={saveError ? 'alert' : 'status'}
+          >
+            {saveError || (isSaving ? 'Đang lưu…' : isDirty ? 'Có thay đổi chưa lưu' : 'Đã lưu')}
+          </span>
         </div>
       </WorkspaceHeader>
 
       <div className="editor-body">
-        <section className="editor-canvas-pane" aria-label="Canvas roadmap">
+        <section className="editor-canvas-pane roadmap-canvas" aria-label="Canvas roadmap">
           <div className="editor-canvas-top">
             <button type="button" className="button editor-add-btn" onClick={handleAddStep}>
               <Icon name="plus" /> Thêm bước
@@ -632,6 +642,7 @@ function EditorCanvas({
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            defaultEdgeOptions={roadmapEdgeOptions}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             onConnect={handleConnect}
@@ -647,42 +658,16 @@ function EditorCanvas({
               setSelectedNodeId(null);
               setSelectedEdgeId(null);
             }}
-            onMove={(_event, viewport: Viewport) => {
-              setZoomPercent(Math.round(viewport.zoom * 100));
-            }}
             deleteKeyCode={['Backspace', 'Delete']}
+            minZoom={0.05}
             fitView={!isNewMode}
+            fitViewOptions={roadmapFitOptions}
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} color="#cbd5e1" />
+            <RoadmapCanvasBackground />
           </ReactFlow>
 
           <div className="editor-canvas-bottom">
-            <div className="editor-zoom-controls">
-              <button
-                type="button"
-                className="editor-zoom-btn"
-                aria-label="Thu nhỏ"
-                onClick={() => void zoomOut()}
-              >
-                <Icon name="minus" />
-              </button>
-              <span className="editor-zoom-value">{zoomPercent}%</span>
-              <button
-                type="button"
-                className="editor-zoom-btn"
-                aria-label="Phóng to"
-                onClick={() => void zoomIn()}
-              >
-                <Icon name="plus" />
-              </button>
-              <button
-                type="button"
-                className="editor-zoom-btn"
-                onClick={() => void fitView({ padding: 0.2 })}
-              >
-                Vừa khung
-              </button>
-            </div>
+            <RoadmapViewportControls />
             <label className="editor-edge-type-label">
               Kiểu nối
               <select
@@ -699,13 +684,6 @@ function EditorCanvas({
                 <option value="default">Đường cong</option>
               </select>
             </label>
-            {selectedEdgeId ? (
-              <button type="button" className="editor-zoom-btn" onClick={handleDeleteSelectedEdge}>
-                Xóa kết nối đang chọn
-              </button>
-            ) : (
-              <span className="editor-canvas-hint">Chọn mũi tên → Sửa hoặc xóa kết nối</span>
-            )}
           </div>
         </section>
 
@@ -714,14 +692,28 @@ function EditorCanvas({
           aria-label={selectedEdge ? 'Chi tiết kết nối' : 'Chi tiết bước'}
         >
           <div className="editor-inspector-head">
-            <h2>{selectedEdge ? 'Chi tiết kết nối' : 'Chi tiết bước'}</h2>
-            <p>
-              {selectedNode
-                ? `Đang chọn: ${selectedNode.data.label}`
-                : selectedEdge
-                  ? `${nodes.find((n) => n.id === selectedEdge.source)?.data.label ?? selectedEdge.source} → ${nodes.find((n) => n.id === selectedEdge.target)?.data.label ?? selectedEdge.target}`
-                  : 'Chọn một bước hoặc mũi tên trên canvas để chỉnh sửa'}
-            </p>
+            <div>
+              <h2 ref={inspectorTitleRef} tabIndex={-1}>
+                {selectedEdge ? 'Chi tiết kết nối' : 'Chi tiết bước'}
+              </h2>
+              <p>
+                {selectedNode
+                  ? `Đang chọn: ${selectedNode.data.label}`
+                  : selectedEdge
+                    ? `${nodes.find((n) => n.id === selectedEdge.source)?.data.label ?? selectedEdge.source} → ${nodes.find((n) => n.id === selectedEdge.target)?.data.label ?? selectedEdge.target}`
+                    : 'Chọn một bước hoặc mũi tên trên canvas để chỉnh sửa'}
+              </p>
+            </div>
+            {(selectedNode || selectedEdge) && (
+              <button
+                type="button"
+                className="editor-close-btn"
+                aria-label="Bỏ chọn"
+                onClick={handleCloseInspector}
+              >
+                <Icon name="close" />
+              </button>
+            )}
           </div>
 
           {selectedNode ? (
@@ -759,19 +751,20 @@ function EditorCanvas({
                 />
                 Hiệu ứng chuyển động (animated)
               </label>
-              <div className="editor-inspector-actions">
+              <div className="editor-inspector-footer">
                 <button
                   type="button"
-                  className="secondary-button"
+                  className="editor-delete-btn"
                   onClick={handleDeleteSelectedEdge}
                 >
-                  Xóa kết nối
+                  <Icon name="trash" /> Xóa kết nối
                 </button>
               </div>
             </div>
           ) : (
             <p className="editor-empty-inspector">
-              Nhấn &ldquo;+ Thêm bước&rdquo; để tạo node mới hoặc kéo từ chấm tròn để nối hai bước.
+              Kéo từ chấm tròn bên dưới một bước đến chấm tròn phía trên bước tiếp theo để tạo mũi
+              tên.
             </p>
           )}
         </aside>
@@ -817,7 +810,7 @@ function EditorStateShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="editor-page">
+    <div className="workspace editor-page">
       <WorkspaceHeader accountEmail={accountEmail}>
         <div className="editor-header-title">
           <Link className="editor-back-link" to="/roadmaps" aria-label="Quay lại danh sách roadmap">

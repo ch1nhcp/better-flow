@@ -222,6 +222,71 @@ describe('Roadmap API Business Logic & Authorization', () => {
     });
   });
 
+  it('saves a Playground graph and returns the same graph when Canvas reopens it', async () => {
+    const graph = {
+      title: 'Onboarding Frontend',
+      nodes: [
+        {
+          ...sampleNode,
+          id: 'setup',
+          position: { x: 24, y: 85.5 },
+          data: { label: 'Chuẩn bị môi trường', description: 'Cài Git và Node.js' },
+        },
+        {
+          ...sampleNode,
+          id: 'typescript',
+          position: { x: 344, y: 24 },
+          data: { label: 'TypeScript' },
+        },
+        {
+          ...sampleNode,
+          id: 'react',
+          position: { x: 344, y: 164 },
+          data: { label: 'React' },
+        },
+      ],
+      edges: [
+        {
+          id: 'edge-setup-typescript',
+          source: 'setup',
+          target: 'typescript',
+          type: 'smoothstep',
+          animated: false,
+        },
+        {
+          id: 'edge-setup-react',
+          source: 'setup',
+          target: 'react',
+          type: 'default',
+          animated: true,
+        },
+      ],
+    };
+    const savedRow = { ...sampleRow, ...graph };
+    database.query.mockResolvedValueOnce({ rows: [savedRow] });
+    database.query.mockResolvedValueOnce({ rows: [savedRow] });
+
+    const created = await request(app)
+      .post('/api/roadmaps')
+      .set('Authorization', `Bearer ${user1Token}`)
+      .send(graph)
+      .expect(201);
+
+    expect(database.query).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('INSERT INTO roadmaps'),
+      [1, graph.title, JSON.stringify(graph.nodes), JSON.stringify(graph.edges)],
+    );
+    expect(created.body.data.roadmap).toMatchObject(graph);
+
+    const reopened = await request(app)
+      .get(`/api/roadmaps/${created.body.data.roadmap.id}`)
+      .set('Authorization', `Bearer ${user1Token}`)
+      .expect(200);
+
+    expect(reopened.body.data.roadmap).toEqual(created.body.data.roadmap);
+  });
+
   it('GET /api/roadmaps/:id distinguishes 200, 403, and 404', async () => {
     database.query.mockResolvedValueOnce({ rows: [sampleRow] });
     const okRes = await request(app)
