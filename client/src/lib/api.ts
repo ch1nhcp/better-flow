@@ -30,7 +30,7 @@ interface ApiOptions extends RequestInit {
   authenticated?: boolean;
 }
 
-export async function apiRequest<T>(path: string, options: ApiOptions = {}): Promise<T> {
+export async function apiResponse(path: string, options: ApiOptions = {}): Promise<Response> {
   const { authenticated, ...request } = options;
   const session = getSession();
   const headers = new Headers(request.headers);
@@ -43,9 +43,8 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}): Pro
   }
   if (request.body) headers.set('Content-Type', 'application/json');
   const response = await fetch(`${apiBase}${path}`, { ...request, headers });
-  if (response.status === 204) return undefined as T;
-  const payload: unknown = await response.json().catch(() => null);
   if (!response.ok) {
+    const payload: unknown = await response.json().catch(() => null);
     const error = isErrorResponse(payload) ? payload.error : undefined;
     if (
       authenticated &&
@@ -61,6 +60,13 @@ export async function apiRequest<T>(path: string, options: ApiOptions = {}): Pro
       error?.message ?? 'Không thể kết nối với máy chủ.',
     );
   }
+  return response;
+}
+
+export async function apiRequest<T>(path: string, options?: ApiOptions): Promise<T> {
+  const response = await apiResponse(path, options);
+  if (response.status === 204) return undefined as T;
+  const payload: unknown = await response.json().catch(() => null);
   // Each feature validates or types its response at the API boundary.
   return payload as T;
 }

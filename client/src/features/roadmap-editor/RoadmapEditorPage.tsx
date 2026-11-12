@@ -27,6 +27,7 @@ import type {
 } from './api';
 import { RoadmapStepNode } from './RoadmapStepNode';
 import type { RoadmapFlowNode } from './RoadmapStepNode';
+import { RoadmapDownloadDialog } from './RoadmapDownloadDialog';
 import { RoadmapCanvasBackground, RoadmapViewportControls } from './RoadmapCanvasControls';
 import { roadmapEdgeOptions, roadmapFitOptions } from './roadmap-canvas-options';
 import './roadmap-editor.css';
@@ -282,6 +283,7 @@ function EditorCanvas({
   const [defaultEdgeType, setDefaultEdgeType] = useState<'smoothstep' | 'default'>('smoothstep');
   const [saveError, setSaveError] = useState('');
   const [isDirty, setIsDirty] = useState(initialDirty);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const inspectorTitleRef = useRef<HTMLHeadingElement>(null);
   const allowNextNavigationRef = useRef(false);
   const leaveDialogRef = useRef<HTMLDialogElement>(null);
@@ -574,14 +576,8 @@ function EditorCanvas({
             <button
               type="button"
               className="secondary-button editor-header-btn"
-              onClick={() => {
-                console.log('Tải xuống roadmap:', {
-                  id: roadmapId,
-                  title: title.trim(),
-                  nodes: serializeNodes(nodes),
-                  edges: serializeEdges(edges),
-                });
-              }}
+              aria-haspopup="dialog"
+              onClick={() => setDownloadOpen(true)}
             >
               <Icon name="download" /> Tải xuống
             </button>
@@ -769,9 +765,16 @@ function EditorCanvas({
           )}
         </aside>
       </div>
+      {downloadOpen && (
+        <RoadmapDownloadDialog
+          roadmapId={roadmapId}
+          hasUnsavedChanges={isDirty}
+          onClose={() => setDownloadOpen(false)}
+        />
+      )}
       <dialog
         ref={leaveDialogRef}
-        className="editor-leave-dialog"
+        className="editor-dialog"
         aria-labelledby={leaveDialogTitleId}
         onCancel={(event) => {
           event.preventDefault();
