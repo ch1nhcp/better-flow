@@ -8,6 +8,7 @@ import { WorkspaceShell } from '../../components/WorkspaceShell';
 import type { WorkspaceAccount } from '../../components/WorkspaceSidebar';
 import { endSession } from '../../lib/auth-session';
 import { useCurrentUser, useSession } from '../auth/use-session';
+import { maxRoadmapTitleLength, validateRoadmapTitle } from '../roadmap-editor/validation';
 import { getRoadmaps } from './api';
 import type { RoadmapItem } from './api';
 import './workspace.css';
@@ -127,15 +128,6 @@ function RoadmapCard({
   );
 }
 
-function validateRoadmapTitle(raw: string): string | null {
-  if (/[\r\n]/.test(raw)) return 'Tên roadmap phải nằm trên một dòng.';
-  const trimmed = raw.trim();
-  const len = [...trimmed].length;
-  if (len < 1) return 'Vui lòng nhập tên roadmap.';
-  if (len > 255) return 'Tên roadmap tối đa 255 ký tự.';
-  return null;
-}
-
 function Workspace({ account }: { account: WorkspaceAccount }) {
   const [sort, setSort] = useState('recent');
   const [newTitle, setNewTitle] = useState('');
@@ -245,7 +237,7 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
               type="text"
               placeholder="Onboarding Frontend"
               value={newTitle}
-              maxLength={255}
+              maxLength={maxRoadmapTitleLength}
               required
               aria-invalid={Boolean(titleError)}
               aria-describedby={titleError ? `${helpId} ${errorId}` : helpId}

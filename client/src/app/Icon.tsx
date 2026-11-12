@@ -6,6 +6,15 @@ const paths = {
   plus: 'M12 5v14M5 12h14',
   minus: 'M5 12h14',
   chevronLeft: 'm15 18-6-6 6-6',
+  close: 'm6 6 12 12M18 6 6 18',
+  book: 'M12 7v14M2 5h6a4 4 0 0 1 4 4 4 4 0 0 1 4-4h6v14h-6a4 4 0 0 0-4 2 4 4 0 0 0-4-2H2Z',
+  save: 'M4 3h13l4 4v14H3V3Zm3 0v6h10V3M7 21v-8h10v8',
+  download: 'M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4',
+  share:
+    'M9 11l6-4M9 13l6 4M9 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+  trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7',
+  check: 'm5 12 4 4L19 6',
+  fit: 'M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5',
   logout: 'M9 5H4v14h5m5-11 4 4-4 4m-6-4h10',
   moreVertical:
     'M12 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1Zm0 7a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1Zm0 7a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1Z',

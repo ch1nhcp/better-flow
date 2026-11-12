@@ -20,13 +20,9 @@ export function WorkspaceSidebar({ account, activeNav = 'roadmaps' }: WorkspaceS
         <Link to="/roadmaps" aria-current={activeNav === 'roadmaps' ? 'page' : undefined}>
           <Icon name="map" /> Roadmap của tôi
         </Link>
-        <button
-          type="button"
-          disabled
-          aria-current={activeNav === 'playground' ? 'page' : undefined}
-        >
-          <Icon name="code" /> Playground <small>Sắp có</small>
-        </button>
+        <Link to="/playground" aria-current={activeNav === 'playground' ? 'page' : undefined}>
+          <Icon name="code" /> Playground
+        </Link>
       </nav>
       <div className="workspace-account">
         {account ? (
