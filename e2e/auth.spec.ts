@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
@@ -324,6 +325,14 @@ test('creates a roadmap on /roadmaps/new and edits an existing roadmap on /roadm
   await expect(page.getByLabel('Tên roadmap')).toHaveValue('Lộ trình React');
   await expect(page.getByText('Có thay đổi chưa lưu', { exact: true })).toBeVisible();
 
+  await page.getByRole('button', { name: 'Tải xuống' }).click();
+  const downloadDialog = page.getByRole('dialog', { name: 'Tải xuống' });
+  await expect(downloadDialog.getByText('Lưu roadmap để tải xuống.')).toBeVisible();
+  await expect(downloadDialog.getByRole('button', { name: 'Ảnh PNG' })).toBeDisabled();
+  await expect(downloadDialog.getByRole('button', { name: 'Markdown (.md)' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(downloadDialog).toHaveCount(0);
+
   await page.getByRole('button', { name: 'Thêm bước' }).click();
   await page.getByLabel('Tên bước').fill('Nền tảng TypeScript');
   await page.getByLabel('Mô tả (không bắt buộc)').fill('Kiểu dữ liệu và hàm');
@@ -352,12 +361,8 @@ test('creates a roadmap on /roadmaps/new and edits an existing roadmap on /roadm
   page.on('console', (message) => {
     if (message.type() === 'log') editorLogs.push(message.text());
   });
-  await page.getByRole('button', { name: 'Tải xuống' }).click();
   await page.getByRole('button', { name: 'Chia sẻ' }).click();
-  expect(editorLogs).toEqual([
-    expect.stringContaining('Tải xuống roadmap:'),
-    expect.stringContaining('Chia sẻ roadmap:'),
-  ]);
+  expect(editorLogs).toEqual([expect.stringContaining('Chia sẻ roadmap:')]);
 
   await page.getByLabel('Tên roadmap').fill('Onboarding Frontend v2');
   await expect(page.getByText('Có thay đổi chưa lưu', { exact: true })).toBeVisible();
@@ -372,4 +377,106 @@ test('creates a roadmap on /roadmaps/new and edits an existing roadmap on /roadm
   await expect(page.getByText('Đã lưu')).toBeVisible();
   await page.getByRole('link', { name: 'Quay lại danh sách roadmap' }).click();
   await expect(page).toHaveURL('/roadmaps');
+});
+
+test('downloads PNG and Markdown from Canvas and can retry a failed export', async ({
+  page,
+}, testInfo) => {
+  const token = tokenFor(Math.floor(Date.now() / 1000) + 3600);
+  const title = 'Lộ trình Frontend';
+  const markdown = `# ${title}\n`;
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/Zx8AAAAASUVORK5CYII=',
+    'base64',
+  );
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), {
+    key: storageKey,
+    value: token,
+  });
+  await mockCurrentUser(page, token);
+  await page.route('**/api/roadmaps/10', (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          roadmap: { ...sampleRoadmaps[0], title, userId: user.id, nodes: [], edges: [] },
+        },
+      },
+    }),
+  );
+
+  let pngAttempts = 0;
+  let releaseFirstPng: (() => void) | undefined;
+  const firstPngPending = new Promise<void>((resolve) => {
+    releaseFirstPng = resolve;
+  });
+  await page.route('**/api/roadmaps/10/export?format=*', async (route) => {
+    expect(route.request().method()).toBe('GET');
+    expect(route.request().headers().authorization).toBe(`Bearer ${token}`);
+    const format = new URL(route.request().url()).searchParams.get('format');
+    if (format === 'png') {
+      if (++pngAttempts === 1) {
+        await firstPngPending;
+        await route.fulfill({
+          status: 500,
+          json: { error: { code: 'INTERNAL_ERROR', message: 'Không thể tạo ảnh PNG.' } },
+        });
+        return;
+      }
+      await route.fulfill({
+        contentType: 'image/png',
+        headers: {
+          'Content-Disposition': `attachment; filename="Frontend.png"; filename*=UTF-8''${encodeURIComponent(title)}.png`,
+        },
+        body: png,
+      });
+      return;
+    }
+    expect(format).toBe('markdown');
+    await route.fulfill({
+      contentType: 'text/markdown; charset=utf-8',
+      headers: { 'Content-Disposition': 'attachment; filename="Frontend.md"' },
+      body: markdown,
+    });
+  });
+
+  await page.goto('/roadmaps/10');
+  const trigger = page.getByRole('button', { name: 'Tải xuống' });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: 'Tải xuống' });
+  const pngButton = dialog.getByRole('button', { name: 'Ảnh PNG' });
+  const markdownButton = dialog.getByRole('button', { name: 'Markdown (.md)' });
+  await expect(pngButton).toBeVisible();
+  await expect(markdownButton).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('download-dialog.png') });
+
+  await pngButton.click();
+  try {
+    await expect(pngButton).toBeDisabled();
+    await expect(pngButton).toHaveCSS('cursor', 'progress', { timeout: 1500 });
+    await expect(pngButton).toHaveAttribute('aria-busy', 'true');
+    await expect(markdownButton).toBeDisabled();
+    await expect(dialog.getByRole('status')).toHaveText('Đang chuẩn bị ảnh PNG…');
+    await page.screenshot({ path: testInfo.outputPath('download-loading.png') });
+  } finally {
+    releaseFirstPng?.();
+  }
+  await expect(dialog.getByRole('alert')).toHaveText('Không thể tạo ảnh PNG.');
+  const [pngDownload] = await Promise.all([page.waitForEvent('download'), pngButton.click()]);
+  expect(pngDownload.suggestedFilename()).toBe(`${title}.png`);
+  expect(await readFile(await pngDownload.path())).toEqual(png);
+
+  const [markdownDownload] = await Promise.all([
+    page.waitForEvent('download'),
+    markdownButton.click(),
+  ]);
+  expect(markdownDownload.suggestedFilename()).toBe('Frontend.md');
+  expect(await readFile(await markdownDownload.path(), 'utf8')).toBe(markdown);
+  await expect(dialog.getByRole('status')).toHaveText('Đã bắt đầu tải file.');
+
+  await dialog.getByRole('button', { name: 'Đóng' }).click();
+  await expect(trigger).toBeFocused();
+  await page.getByLabel('Tên roadmap').fill('Tên đang chỉnh sửa');
+  await trigger.click();
+  await expect(dialog.getByText('File dùng bản roadmap đã lưu gần nhất.')).toBeVisible();
+  await expect(pngButton).toBeEnabled();
 });

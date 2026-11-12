@@ -374,7 +374,7 @@
   text-align: center;
 }
 
-.editor-leave-dialog {
+.editor-dialog {
   width: min(100% - 32px, 420px);
   padding: 24px;
   border: 1px solid var(--color-border);
@@ -384,14 +384,123 @@
   box-shadow: 0 20px 48px rgb(15 23 42 / 0.16);
 }
 
-.editor-leave-dialog:modal {
+.editor-dialog:modal {
   overscroll-behavior: contain;
 }
 
-.editor-leave-dialog::backdrop {
+.editor-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
   background: rgb(15 23 42 / 0.35);
+}
+
+.editor-download-dialog {
+  width: min(100% - 32px, 460px);
+  max-height: calc(100% - 32px);
+}
+
+.editor-download-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.editor-download-heading h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.editor-download-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.secondary-button.editor-download-option {
+  min-height: 44px;
+  padding-inline: var(--space-sm);
+  border-radius: var(--radius-md);
+}
+
+.editor-download-option .icon {
+  color: var(--color-tertiary);
+}
+
+.secondary-button.editor-download-option:hover:not(:disabled) {
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-soft);
+}
+
+.editor-download-option:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.secondary-button.editor-download-option[aria-busy='true'] {
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-hover);
+  opacity: 1;
+  cursor: progress;
+}
+
+.editor-download-spinner {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .editor-download-spinner {
+    animation: editor-download-spin 750ms linear infinite;
+  }
+}
+
+@keyframes editor-download-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.editor-download-notes {
+  display: grid;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral);
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+}
+
+.editor-download-notes strong {
+  color: var(--color-primary);
+}
+
+.editor-download-status {
+  margin-top: var(--space-sm);
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+}
+
+.editor-download-status.error {
+  color: #b91c1c;
+}
+
+@media (max-width: 360px) {
+  .editor-download-dialog {
+    padding: var(--space-md);
+  }
+
+  .editor-download-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .editor-leave-content {

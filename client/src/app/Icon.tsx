@@ -10,6 +10,7 @@ const paths = {
   book: 'M12 7v14M2 5h6a4 4 0 0 1 4 4 4 4 0 0 1 4-4h6v14h-6a4 4 0 0 0-4 2 4 4 0 0 0-4-2H2Z',
   save: 'M4 3h13l4 4v14H3V3Zm3 0v6h10V3M7 21v-8h10v8',
   download: 'M12 3v12m-4-4 4 4 4-4M4 16v4h16v-4',
+  image: 'M3 3h18v18H3zM3 17l5-5 4 4 3-3 6 6M16 8h.01',
   share:
     'M9 11l6-4M9 13l6 4M9 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7',

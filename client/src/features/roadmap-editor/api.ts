@@ -1,4 +1,4 @@
-import { apiRequest } from '../../lib/api';
+import { ApiError, apiRequest, apiResponse } from '../../lib/api';
 
 export interface RoadmapNodeData extends Record<string, unknown> {
   label: string;
@@ -45,6 +45,45 @@ export interface UpdateRoadmapRequest {
   title?: string;
   nodes?: RoadmapNodePayload[];
   edges?: RoadmapEdgePayload[];
+}
+
+export type RoadmapExportFormat = 'png' | 'markdown';
+
+function attachmentFilename(disposition: string | null): string | undefined {
+  const encoded = disposition?.match(/\bfilename\*=UTF-8''([^;]+)/i)?.[1];
+  if (encoded) {
+    try {
+      return decodeURIComponent(encoded);
+    } catch {
+      // Fall back to the plain filename when the encoded value is malformed.
+    }
+  }
+  return disposition?.match(/\bfilename="([^"]+)"/i)?.[1];
+}
+
+export async function exportRoadmap(
+  id: number,
+  format: RoadmapExportFormat,
+  signal: AbortSignal,
+): Promise<{ blob: Blob; filename: string }> {
+  const response = await apiResponse(`/roadmaps/${id}/export?format=${format}`, {
+    authenticated: true,
+    signal,
+  });
+  const expectedType = format === 'png' ? 'image/png' : 'text/markdown';
+  const contentType = response.headers.get('Content-Type')?.split(';')[0]?.trim().toLowerCase();
+  if (contentType !== expectedType) {
+    throw new ApiError(
+      response.status,
+      'INVALID_FILE_RESPONSE',
+      'Máy chủ chưa trả về file cần tải.',
+    );
+  }
+
+  const extension = format === 'png' ? 'png' : 'md';
+  const filename =
+    attachmentFilename(response.headers.get('Content-Disposition')) ?? `roadmap-${id}.${extension}`;
+  return { blob: await response.blob(), filename };
 }
 
 export async function getRoadmapById(id: number, signal?: AbortSignal): Promise<RoadmapDetail> {
