@@ -1,4 +1,5 @@
 import type * as EnvModule from '../src/config/env.js';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -70,6 +71,7 @@ describe('Roadmap API Authentication', () => {
     { method: 'get' as const, url: '/api/roadmaps' },
     { method: 'post' as const, url: '/api/roadmaps' },
     { method: 'get' as const, url: '/api/roadmaps/1' },
+    { method: 'get' as const, url: '/api/roadmaps/1/export?format=png' },
     { method: 'put' as const, url: '/api/roadmaps/1' },
     { method: 'delete' as const, url: '/api/roadmaps/1' },
   ])('rejects unauthenticated requests to $method $url', async ({ method, url }) => {
@@ -159,6 +161,128 @@ describe('Roadmap API Validation', () => {
       .send(body)
       .expect(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
+  });
+});
+
+describe('Roadmap export', () => {
+  const exportUrl = '/api/roadmaps/10/export';
+  const authorization = `Bearer ${user1Token}`;
+  const savedGraph = {
+    ...sampleRow,
+    title: 'Lộ trình: Frontend',
+    nodes: [
+      {
+        ...sampleNode,
+        id: 'setup',
+        position: { x: -400, y: -100 },
+        data: { label: 'Chuẩn bị', description: '# Cài Git  ' },
+      },
+      {
+        ...sampleNode,
+        id: 'react',
+        position: { x: 700, y: 50 },
+        data: { label: 'React', description: '  setup -> react  ' },
+      },
+      {
+        ...sampleNode,
+        id: 'test',
+        position: { x: 40, y: -80 },
+        data: { label: 'Kiểm thử', description: '\\Đường dẫn' },
+      },
+    ],
+    edges: [
+      { id: 'curve', source: 'setup', target: 'react', type: 'default', animated: true },
+      { id: 'angled', source: 'test', target: 'react', type: 'smoothstep', animated: false },
+    ],
+  };
+
+  it.each(['', '?format=pdf', '?format=png&format=markdown'])(
+    'rejects a missing or unsupported export format (%s)',
+    async (query) => {
+      const res = await request(app)
+        .get(exportUrl + query)
+        .set('Authorization', authorization)
+        .expect(400);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+      expect(database.query).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { exists: true, status: 403, code: 'FORBIDDEN' },
+    { exists: false, status: 404, code: 'NOT_FOUND' },
+  ])('uses ownership checks before exporting ($status)', async ({ exists, status, code }) => {
+    database.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ exists }] });
+
+    const res = await request(app)
+      .get(exportUrl + '?format=markdown')
+      .set('Authorization', authorization)
+      .expect(status);
+
+    expect(res.body.error.code).toBe(code);
+    expect(res.headers['content-disposition']).toBeUndefined();
+    expect(database.query).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('WHERE id = $1 AND user_id = $2'),
+      [10, 1],
+    );
+  });
+
+  it('downloads UTF-8 Markdown in Playground syntax', async () => {
+    database.query.mockResolvedValueOnce({ rows: [savedGraph] });
+
+    const res = await request(app)
+      .get(exportUrl + '?format=markdown')
+      .set('Authorization', authorization)
+      .expect('Content-Type', 'text/markdown; charset=utf-8')
+      .expect('Access-Control-Expose-Headers', 'Content-Disposition')
+      .expect('Cache-Control', 'no-store')
+      .expect(200);
+
+    const disposition = String(res.headers['content-disposition']);
+    expect(disposition).toMatch(/^attachment;/);
+    expect(decodeURIComponent(disposition)).toContain("filename*=UTF-8''Lộ trình- Frontend.md");
+    expect(res.text).toBe(
+      [
+        '# Lộ trình: Frontend',
+        '',
+        '## [setup] Chuẩn bị',
+        '\\# Cài Git  ',
+        '',
+        '## [react] React',
+        '\\  setup -> react  ',
+        '',
+        '## [test] Kiểm thử',
+        '\\\\Đường dẫn',
+        '',
+        'setup → react [animated] [type=default]',
+        'test → react',
+        '',
+      ].join('\n'),
+    );
+  });
+
+  it('downloads a PNG with distant steps and connections at their saved positions', async () => {
+    database.query.mockResolvedValueOnce({ rows: [savedGraph] });
+
+    const res = await request(app)
+      .get(exportUrl + '?format=png')
+      .set('Authorization', authorization)
+      .expect('Content-Type', 'image/png')
+      .expect('Content-Disposition', /^attachment;.*\.png/)
+      .expect(200);
+
+    const image = await loadImage(res.body as Buffer);
+    expect(image.width).toBe(1388);
+    const ctx = createCanvas(image.width, image.height).getContext('2d');
+    ctx.drawImage(image, 0, 0);
+    const pixel = (x: number, y: number) => [...ctx.getImageData(x, y, 1, 1).data];
+    expect(pixel(0, 0)).toEqual([248, 250, 252, 255]);
+    expect(pixel(35, 40)).toEqual([255, 255, 255, 255]);
+    expect(pixel(1135, 190)).toEqual([255, 255, 255, 255]);
+    expect(pixel(1244, 169)).toEqual([37, 99, 235, 255]);
   });
 });
 

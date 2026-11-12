@@ -13,7 +13,7 @@ const draft = [
   '# Lộ trình Web',
   'html -> css [animated] [type=default]',
   '## [html] HTML cơ bản',
-  'Cấu trúc trang web.',
+  '\\  Cấu trúc trang web.  ',
   '## [css] CSS cơ bản',
 ].join('\n');
 
@@ -63,7 +63,7 @@ test('previews Markdown, preserves the draft on errors, and opens the saved grap
         {
           id: 'html',
           type: 'default',
-          data: { label: 'HTML cơ bản', description: 'Cấu trúc trang web.' },
+          data: { label: 'HTML cơ bản', description: '  Cấu trúc trang web.  ' },
         },
         { id: 'css', type: 'default', data: { label: 'CSS cơ bản' } },
       ],
