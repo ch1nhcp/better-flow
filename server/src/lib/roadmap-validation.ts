@@ -143,6 +143,12 @@ export const UpdateRoadmapSchema = z
 export type CreateRoadmapInput = z.infer<typeof CreateRoadmapSchema>;
 export type UpdateRoadmapInput = z.infer<typeof UpdateRoadmapSchema>;
 
+export const ShareRoadmapSchema = z.strictObject({
+  isPublic: z.boolean({ message: 'Trường isPublic phải là giá trị boolean.' }),
+});
+
+export type ShareRoadmapInput = z.infer<typeof ShareRoadmapSchema>;
+
 // --- PARSERS DÙNG CHO CONTROLLER & SERVICE ---
 export function parseRoadmapId(id: unknown): number {
   const result = z
@@ -171,6 +177,16 @@ export function validateUpdateRoadmapBody(body: unknown): UpdateRoadmapInput {
   const result = UpdateRoadmapSchema.safeParse(body);
   if (!result.success) {
     const firstIssue = result.error.issues[0]?.message ?? 'Dữ liệu cập nhật roadmap không hợp lệ.';
+    throw new HttpError(400, 'VALIDATION_ERROR', firstIssue);
+  }
+  return result.data;
+}
+
+export function validateShareRoadmapBody(body: unknown): ShareRoadmapInput {
+  const result = ShareRoadmapSchema.safeParse(body);
+  if (!result.success) {
+    const firstIssue =
+      result.error.issues[0]?.message ?? 'Dữ liệu cập nhật trạng thái chia sẻ không hợp lệ.';
     throw new HttpError(400, 'VALIDATION_ERROR', firstIssue);
   }
   return result.data;

@@ -9,11 +9,13 @@ import {
   getRoadmapDetail,
   updateRoadmap,
   deleteRoadmap,
+  updateRoadmapShare,
 } from '../db/roadmaps.js';
 import {
   parseRoadmapId,
   validateCreateRoadmapBody,
   validateUpdateRoadmapBody,
+  validateShareRoadmapBody,
 } from '../lib/roadmap-validation.js';
 
 export const roadmapsRouter = Router();
@@ -86,6 +88,16 @@ roadmapsRouter.put<{ id: string }, unknown, unknown, unknown, AuthLocals>(
     const updates = validateUpdateRoadmapBody(request.body);
     const roadmap = await updateRoadmap(id, response.locals.auth.userId, updates);
     response.json({ data: { roadmap } });
+  },
+);
+
+roadmapsRouter.patch<{ id: string }, unknown, unknown, unknown, AuthLocals>(
+  '/:id/share',
+  async (request, response) => {
+    const id = parseRoadmapId(request.params.id);
+    const { isPublic } = validateShareRoadmapBody(request.body);
+    const share = await updateRoadmapShare(id, response.locals.auth.userId, isPublic);
+    response.json({ data: share });
   },
 );
 

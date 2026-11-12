@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import type { QueryResultRow } from 'pg';
 import { getPool } from './pool.js';
 import { HttpError } from '../lib/http-error.js';
@@ -53,6 +54,57 @@ export interface RoadmapDetail {
   shareCode: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface RoadmapShareStatus {
+  id: number;
+  isPublic: boolean;
+  shareCode: string | null;
+}
+
+interface RoadmapShareRow extends QueryResultRow {
+  id: number;
+  user_id: number;
+  is_public: boolean;
+  share_code: string | null;
+}
+
+interface SharedRoadmapRow extends QueryResultRow {
+  title: string;
+  nodes: RoadmapNode[];
+  edges: RoadmapEdge[];
+  author_email: string;
+  updated_at: Date;
+}
+
+export interface SharedRoadmapDetail {
+  title: string;
+  nodes: RoadmapNode[];
+  edges: RoadmapEdge[];
+  authorEmail: string;
+  updatedAt: string;
+}
+
+const SHARE_CODE_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const SHARE_CODE_LENGTH = 6;
+const MAX_SHARE_CODE_ATTEMPTS = 5;
+
+function generateShareCode(): string {
+  let code = '';
+  for (let i = 0; i < SHARE_CODE_LENGTH; i += 1) {
+    code += SHARE_CODE_ALPHABET[randomInt(SHARE_CODE_ALPHABET.length)];
+  }
+  return code;
+}
+
+function isShareCodeUniqueViolation(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null || !('code' in error) || error.code !== '23505') {
+    return false;
+  }
+  if ('constraint' in error && typeof error.constraint === 'string') {
+    return error.constraint === 'roadmaps_share_code_key';
+  }
+  return true;
 }
 
 function formatRoadmapDetail(row: RoadmapRow): RoadmapDetail {
@@ -238,4 +290,116 @@ export async function deleteRoadmap(id: number, userId: number): Promise<void> {
     }
     throw new HttpError(404, 'NOT_FOUND', 'Roadmap không tồn tại.');
   }
+}
+
+export async function updateRoadmapShare(
+  id: number,
+  userId: number,
+  isPublic: boolean,
+): Promise<RoadmapShareStatus> {
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows } = await client.query<RoadmapShareRow>(
+      `SELECT id, user_id, is_public, share_code
+       FROM roadmaps
+       WHERE id = $1
+       FOR UPDATE`,
+      [id],
+    );
+    const existing = rows[0];
+    if (!existing) {
+      await client.query('ROLLBACK');
+      throw new HttpError(404, 'NOT_FOUND', 'Roadmap không tồn tại.');
+    }
+    if (existing.user_id !== userId) {
+      await client.query('ROLLBACK');
+      throw new HttpError(403, 'FORBIDDEN', 'Bạn không có quyền chia sẻ roadmap này.');
+    }
+
+    if (isPublic && !existing.share_code) {
+      for (let attempt = 0; attempt < MAX_SHARE_CODE_ATTEMPTS; attempt += 1) {
+        const candidateCode = generateShareCode();
+        await client.query('SAVEPOINT update_share_code');
+        try {
+          const updateResult = await client.query<RoadmapShareRow>(
+            `UPDATE roadmaps
+             SET is_public = $1, share_code = $2, updated_at = NOW()
+             WHERE id = $3 AND user_id = $4
+             RETURNING id, user_id, is_public, share_code`,
+            [true, candidateCode, id, userId],
+          );
+          await client.query('RELEASE SAVEPOINT update_share_code');
+          await client.query('COMMIT');
+          const updated = updateResult.rows[0];
+          if (!updated) throw new Error('Roadmap share update returned no result.');
+          return {
+            id: updated.id,
+            isPublic: updated.is_public,
+            shareCode: updated.share_code,
+          };
+        } catch (error) {
+          await client.query('ROLLBACK TO SAVEPOINT update_share_code');
+          if (isShareCodeUniqueViolation(error) && attempt < MAX_SHARE_CODE_ATTEMPTS - 1) {
+            continue;
+          }
+          throw error;
+        }
+      }
+      throw new Error('Failed to generate unique share code.');
+    }
+
+    const updateResult = await client.query<RoadmapShareRow>(
+      `UPDATE roadmaps
+       SET is_public = $1, updated_at = NOW()
+       WHERE id = $2 AND user_id = $3
+       RETURNING id, user_id, is_public, share_code`,
+      [isPublic, id, userId],
+    );
+    await client.query('COMMIT');
+    const updated = updateResult.rows[0];
+    if (!updated) throw new Error('Roadmap share update returned no result.');
+    return {
+      id: updated.id,
+      isPublic: updated.is_public,
+      shareCode: updated.share_code,
+    };
+  } catch (error) {
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      // ignore rollback errors if connection was broken
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function findSharedRoadmapByCode(shareCode: string): Promise<SharedRoadmapDetail> {
+  const { rows } = await getPool().query<SharedRoadmapRow>(
+    `SELECT
+       r.title,
+       r.nodes,
+       r.edges,
+       u.email AS author_email,
+       r.updated_at
+     FROM roadmaps r
+     INNER JOIN users u ON u.id = r.user_id
+     WHERE r.share_code = $1 AND r.is_public = TRUE`,
+    [shareCode],
+  );
+  const row = rows[0];
+  if (!row) {
+    throw new HttpError(404, 'NOT_FOUND', 'Link chia sẻ không tồn tại hoặc đã bị tắt.');
+  }
+  return {
+    title: row.title,
+    nodes: Array.isArray(row.nodes) ? row.nodes : [],
+    edges: Array.isArray(row.edges) ? row.edges : [],
+    authorEmail: row.author_email,
+    updatedAt: row.updated_at.toISOString(),
+  };
 }
