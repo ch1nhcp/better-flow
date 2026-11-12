@@ -379,12 +379,11 @@ test('creates a roadmap on /roadmaps/new and edits an existing roadmap on /roadm
   await expect(page.getByLabel('Tên roadmap')).toHaveValue('Onboarding Frontend');
   await expect(page.getByText('Đã lưu')).toBeVisible();
 
-  const editorLogs: string[] = [];
-  page.on('console', (message) => {
-    if (message.type() === 'log') editorLogs.push(message.text());
-  });
   await page.getByRole('button', { name: 'Chia sẻ' }).click();
-  expect(editorLogs).toEqual([expect.stringContaining('Chia sẻ roadmap:')]);
+  const shareDialog = page.getByRole('dialog', { name: 'Chia sẻ roadmap' });
+  await expect(shareDialog).toBeVisible();
+  await shareDialog.getByRole('button', { name: 'Đóng', exact: true }).last().click();
+  await expect(shareDialog).toBeHidden();
 
   await page.getByLabel('Tên roadmap').fill('Onboarding Frontend v2');
   await expect(page.getByText('Có thay đổi chưa lưu', { exact: true })).toBeVisible();

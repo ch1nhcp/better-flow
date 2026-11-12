@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Brand } from '../../app/Brand';
 import { Icon } from '../../app/Icon';
+import { ShareRoadmapDialog } from '../../components/ShareRoadmapDialog';
 import { WorkspaceShell } from '../../components/WorkspaceShell';
 import type { WorkspaceAccount } from '../../components/WorkspaceSidebar';
 import { ApiError } from '../../lib/api';
@@ -19,11 +20,13 @@ const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' });
 function RoadmapCard({
   roadmap,
   onOpenDetail,
+  onShare,
   onDelete,
   isDeleting,
 }: {
   roadmap: RoadmapItem;
   onOpenDetail: (roadmap: RoadmapItem) => void;
+  onShare: (roadmap: RoadmapItem) => void;
   onDelete: (roadmap: RoadmapItem) => void;
   isDeleting: boolean;
 }) {
@@ -110,6 +113,16 @@ function RoadmapCard({
             </button>
             <button
               type="button"
+              className="roadmap-menu-item"
+              onClick={() => {
+                menuRef.current?.hidePopover();
+                onShare(roadmap);
+              }}
+            >
+              Chia sẻ
+            </button>
+            <button
+              type="button"
               className="roadmap-menu-item danger"
               disabled={isDeleting}
               onClick={() => {
@@ -140,6 +153,7 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
   const [titleError, setTitleError] = useState('');
   const [pendingDelete, setPendingDelete] = useState<RoadmapItem | null>(null);
   const [deleteError, setDeleteError] = useState('');
+  const [shareTarget, setShareTarget] = useState<RoadmapItem | null>(null);
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -259,6 +273,7 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
             onOpenDetail={(item) => {
               void navigate(`/roadmaps/${item.id}`, { state: { title: item.title } });
             }}
+            onShare={setShareTarget}
             onDelete={openDeleteDialog}
             isDeleting={deleteMutation.isPending && deleteMutation.variables === roadmap.id}
           />
@@ -366,6 +381,22 @@ function Workspace({ account }: { account: WorkspaceAccount }) {
           </div>
         </div>
       </dialog>
+      {shareTarget && (
+        <ShareRoadmapDialog
+          roadmapId={shareTarget.id}
+          roadmapTitle={shareTarget.title}
+          isPublic={shareTarget.shared}
+          shareCode={shareTarget.shareCode}
+          onShareUpdated={(next) => {
+            setShareTarget((current) =>
+              current && current.id === next.id
+                ? { ...current, shared: next.isPublic, shareCode: next.shareCode }
+                : current,
+            );
+          }}
+          onClose={() => setShareTarget(null)}
+        />
+      )}
     </WorkspaceShell>
   );
 }

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AuthPage } from '../features/auth/AuthPage';
 import { RoadmapEditorPage } from '../features/roadmap-editor/RoadmapEditorPage';
+import { SharedRoadmapPage } from '../features/share/SharedRoadmapPage';
 import { WorkspacePage } from '../features/workspace/WorkspacePage';
 import { Layout, StartPage } from './Layout';
 import { NotFoundPage, RouteErrorPage } from './pages';
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       },
       { path: 'roadmaps/new', element: <RoadmapEditorPage /> },
       { path: 'roadmaps/:id', element: <RoadmapEditorPage /> },
+      { path: 'share/:shareCode', element: <SharedRoadmapPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
