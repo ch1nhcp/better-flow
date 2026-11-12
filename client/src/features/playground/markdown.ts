@@ -205,7 +205,7 @@ export function parsePlaygroundMarkdown(markdown: string): ParseResult {
     }
 
     if (nodeForDescription) {
-      const description = text.startsWith('\\') ? text.slice(1) : text;
+      const description = text.startsWith('\\') ? raw.trimStart().slice(1) : text;
       if ([...description].length > 2000) {
         errors.push({
           ...location,
