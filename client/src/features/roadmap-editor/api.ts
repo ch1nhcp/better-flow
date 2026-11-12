@@ -47,6 +47,20 @@ export interface UpdateRoadmapRequest {
   edges?: RoadmapEdgePayload[];
 }
 
+export interface RoadmapShareStatus {
+  id: number;
+  isPublic: boolean;
+  shareCode: string | null;
+}
+
+export interface SharedRoadmapDetail {
+  title: string;
+  nodes: RoadmapNodePayload[];
+  edges: RoadmapEdgePayload[];
+  authorEmail: string;
+  updatedAt: string;
+}
+
 export type RoadmapExportFormat = 'png' | 'markdown';
 
 function attachmentFilename(disposition: string | null): string | undefined {
@@ -112,5 +126,30 @@ export async function updateRoadmap(
     authenticated: true,
     body: JSON.stringify(payload),
   });
+  return response.data.roadmap;
+}
+
+export async function updateRoadmapShare(
+  id: number,
+  isPublic: boolean,
+): Promise<RoadmapShareStatus> {
+  const response = await apiRequest<{ data: RoadmapShareStatus }>(`/roadmaps/${id}/share`, {
+    method: 'PATCH',
+    authenticated: true,
+    body: JSON.stringify({ isPublic }),
+  });
+  return response.data;
+}
+
+export async function getSharedRoadmap(
+  shareCode: string,
+  signal?: AbortSignal,
+): Promise<SharedRoadmapDetail> {
+  const response = await apiRequest<{ data: { roadmap: SharedRoadmapDetail } }>(
+    `/share/${encodeURIComponent(shareCode)}`,
+    {
+      ...(signal ? { signal } : {}),
+    },
+  );
   return response.data.roadmap;
 }

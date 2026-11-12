@@ -13,6 +13,7 @@ import '@xyflow/react/dist/style.css';
 import { Link, Navigate, useBlocker, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Brand } from '../../app/Brand';
 import { Icon } from '../../app/Icon';
+import { ShareRoadmapDialog } from '../../components/ShareRoadmapDialog';
 import { WorkspaceHeader } from '../../components/WorkspaceHeader';
 import { ApiError } from '../../lib/api';
 import { endSession, getSession } from '../../lib/auth-session';
@@ -259,6 +260,8 @@ function EditorCanvas({
   initialTitle,
   initialNodes,
   initialEdges,
+  initialIsPublic,
+  initialShareCode,
   initialDirty,
   sessionVersion,
 }: {
@@ -266,6 +269,8 @@ function EditorCanvas({
   initialTitle: string;
   initialNodes: RoadmapFlowNode[];
   initialEdges: Edge[];
+  initialIsPublic: boolean;
+  initialShareCode: string | null;
   initialDirty: boolean;
   sessionVersion: number;
 }) {
@@ -284,6 +289,9 @@ function EditorCanvas({
   const [saveError, setSaveError] = useState('');
   const [isDirty, setIsDirty] = useState(initialDirty);
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [isPublic, setIsPublic] = useState(initialIsPublic);
+  const [shareCode, setShareCode] = useState<string | null>(initialShareCode);
   const inspectorTitleRef = useRef<HTMLHeadingElement>(null);
   const allowNextNavigationRef = useRef(false);
   const leaveDialogRef = useRef<HTMLDialogElement>(null);
@@ -584,9 +592,8 @@ function EditorCanvas({
             <button
               type="button"
               className="secondary-button editor-header-btn"
-              onClick={() => {
-                console.log('Chia sẻ roadmap:', { id: roadmapId, title: title.trim() });
-              }}
+              aria-haspopup="dialog"
+              onClick={() => setShareOpen(true)}
             >
               <Icon name="share" /> Chia sẻ
             </button>
@@ -772,6 +779,19 @@ function EditorCanvas({
           onClose={() => setDownloadOpen(false)}
         />
       )}
+      {shareOpen && (
+        <ShareRoadmapDialog
+          roadmapId={roadmapId}
+          roadmapTitle={title.trim()}
+          isPublic={isPublic}
+          shareCode={shareCode}
+          onShareUpdated={(next) => {
+            setIsPublic(next.isPublic);
+            setShareCode(next.shareCode);
+          }}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
       <dialog
         ref={leaveDialogRef}
         className="editor-dialog"
@@ -934,6 +954,8 @@ export function RoadmapEditorPage() {
           initialTitle={resolvedTitle}
           initialNodes={toFlowNodes(Array.isArray(detail.nodes) ? detail.nodes : [])}
           initialEdges={toFlowEdges(Array.isArray(detail.edges) ? detail.edges : [])}
+          initialIsPublic={detail.isPublic}
+          initialShareCode={detail.shareCode}
           initialDirty={false}
           sessionVersion={session.version}
         />
@@ -948,6 +970,8 @@ export function RoadmapEditorPage() {
         initialTitle={fallbackTitle}
         initialNodes={[]}
         initialEdges={[]}
+        initialIsPublic={false}
+        initialShareCode={null}
         initialDirty={true}
         sessionVersion={session.version}
       />

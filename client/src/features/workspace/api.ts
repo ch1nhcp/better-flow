@@ -22,6 +22,7 @@ export interface RoadmapItem {
   description: string | null;
   updatedAt: string;
   shared: boolean;
+  shareCode: string | null;
   steps: string[];
 }
 
@@ -41,6 +42,7 @@ export async function getRoadmaps(signal?: AbortSignal): Promise<RoadmapItem[]> 
     description: null,
     updatedAt: roadmap.updatedAt,
     shared: roadmap.isPublic,
+    shareCode: roadmap.shareCode ?? null,
     steps: Array.isArray(roadmap.previewNodes)
       ? roadmap.previewNodes
           .map((node) => node.label)
