@@ -1,13 +1,35 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { Layout } from './Layout';
-import { HomePage, NotFoundPage, RouteErrorPage } from './pages';
+import { AuthPage } from '../features/auth/AuthPage';
+import { RoadmapEditorPage } from '../features/roadmap-editor/RoadmapEditorPage';
+import { SharedRoadmapPage } from '../features/share/SharedRoadmapPage';
+import { WorkspacePage } from '../features/workspace/WorkspacePage';
+import { Layout, StartPage } from './Layout';
+import { NotFoundPage, RouteErrorPage } from './pages';
 
 export const router = createBrowserRouter([
   {
     element: <Layout />,
     errorElement: <RouteErrorPage />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <StartPage /> },
+      { path: 'login', element: <AuthPage key="login" mode="login" /> },
+      { path: 'register', element: <AuthPage key="register" mode="register" /> },
+      { path: 'roadmaps', element: <WorkspacePage /> },
+      {
+        path: 'playground',
+        lazy: async () => {
+          const { PlaygroundPage } = await import('../features/playground/PlaygroundPage');
+          return { Component: PlaygroundPage };
+        },
+        hydrateFallbackElement: (
+          <p className="route-message" role="status">
+            Đang mở Playground…
+          </p>
+        ),
+      },
+      { path: 'roadmaps/new', element: <RoadmapEditorPage /> },
+      { path: 'roadmaps/:id', element: <RoadmapEditorPage /> },
+      { path: 'share/:shareCode', element: <SharedRoadmapPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
