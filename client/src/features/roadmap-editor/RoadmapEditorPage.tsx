@@ -231,7 +231,7 @@ function StepInspectorForm({
         </p>
       )}
 
-      <button type="submit" className="button">
+      <button type="submit" className="secondary-button">
         <Icon name="check" /> Áp dụng
       </button>
       <div className="editor-step-delete">
@@ -633,7 +633,11 @@ function EditorCanvas({
       <div className="editor-body">
         <section className="editor-canvas-pane roadmap-canvas" aria-label="Canvas roadmap">
           <div className="editor-canvas-top">
-            <button type="button" className="button editor-add-btn" onClick={handleAddStep}>
+            <button
+              type="button"
+              className="secondary-button editor-add-btn"
+              onClick={handleAddStep}
+            >
               <Icon name="plus" /> Thêm bước
             </button>
             <span className="editor-node-count">

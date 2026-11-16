@@ -59,7 +59,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #00845f;
+  background: var(--color-accent-text);
   flex: none;
 }
 
@@ -112,7 +112,7 @@
 .workspace-sidebar [aria-current='page'] {
   border-color: var(--color-accent-border);
   background: var(--color-accent-soft);
-  color: var(--color-accent-hover);
+  color: var(--color-accent-text);
   font-weight: 600;
 }
 

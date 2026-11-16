@@ -18,17 +18,17 @@ const draft = [
 ].join('\n');
 
 async function expectCanvasPalette(graph: Locator) {
-  await expect(graph).toHaveCSS('background-color', 'rgb(248, 250, 252)');
+  await expect(graph).toHaveCSS('background-color', 'rgb(250, 250, 248)');
   await expect(graph.locator('.roadmap-step-handle').first()).toHaveCSS(
     'background-color',
-    'rgb(37, 99, 235)',
+    'rgb(0, 163, 108)',
   );
   const edge = graph.locator('.react-flow__edge-path').first();
-  await expect(edge).toHaveCSS('stroke', 'rgb(148, 163, 184)');
+  await expect(edge).toHaveCSS('stroke', 'rgb(111, 116, 120)');
   await expect(edge).toHaveAttribute('marker-end', /^url\(/);
   await expect(graph.locator('.react-flow__arrowhead .arrowclosed')).toHaveCSS(
     'fill',
-    'rgb(37, 99, 235)',
+    'rgb(0, 163, 108)',
   );
 }
 
@@ -159,7 +159,7 @@ test('previews Markdown, preserves the draft on errors, and opens the saved grap
   await expectCanvasPalette(page.getByRole('region', { name: 'Canvas roadmap' }));
   await expect(htmlNode.locator('.roadmap-step-node')).toHaveCSS(
     'border-top-color',
-    'rgb(37, 99, 235)',
+    'rgb(0, 163, 108)',
   );
   const firstNode = saved!.nodes[0]!;
   await expect(htmlNode).toHaveCSS(
@@ -172,6 +172,6 @@ test('previews Markdown, preserves the draft on errors, and opens the saved grap
   await expect(page.getByRole('textbox', { name: 'Tên bước' })).toHaveCount(0);
   await expect(htmlNode.locator('.roadmap-step-node')).toHaveCSS(
     'border-top-color',
-    'rgb(226, 232, 240)',
+    'rgb(220, 222, 223)',
   );
 });

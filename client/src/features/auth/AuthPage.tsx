@@ -38,11 +38,7 @@ function AuthPreview() {
           <span aria-hidden="true" />
           Betterflow v1.0
         </p>
-        <h2>
-          Từ ý tưởng
-          <br />
-          đến lộ trình rõ ràng.
-        </h2>
+        <h2>Từ ý tưởng đến lộ trình rõ ràng.</h2>
         <p>Dựng từng bước. Kết nối tư duy thành hệ thống trực quan, dễ hiểu.</p>
       </div>
       <div className="auth-flow" aria-label="Lộ trình minh họa">

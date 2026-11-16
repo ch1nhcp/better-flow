@@ -1,5 +1,5 @@
 .roadmap-canvas {
-  background: #f8fafc;
+  background: var(--color-neutral);
 }
 
 .roadmap-canvas .react-flow__node-default {
@@ -16,18 +16,18 @@
   width: 240px;
   padding: 12px 16px;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   color: var(--color-primary);
   text-align: left;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+  box-shadow: 0 1px 2px rgb(from var(--color-primary) r g b / 6%);
 }
 
 .roadmap-step-node.selected {
   border-color: var(--color-tertiary);
   box-shadow:
     0 0 0 1px var(--color-tertiary),
-    0 3px 8px rgb(37 99 235 / 14%);
+    0 3px 8px rgb(from var(--color-tertiary) r g b / 14%);
 }
 
 .roadmap-canvas .react-flow__node:focus-visible .roadmap-step-node {
@@ -66,7 +66,7 @@
 }
 
 .roadmap-canvas .react-flow__edge-path {
-  stroke: #94a3b8;
+  stroke: var(--color-secondary);
   stroke-width: 1.75;
 }
 
@@ -89,7 +89,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  box-shadow: 0 2px 8px rgb(15 23 42 / 8%);
+  box-shadow: 0 2px 8px rgb(from var(--color-primary) r g b / 8%);
 }
 
 .roadmap-viewport-tools span {

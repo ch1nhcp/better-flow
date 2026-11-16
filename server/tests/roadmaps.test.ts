@@ -279,10 +279,10 @@ describe('Roadmap export', () => {
     const ctx = createCanvas(image.width, image.height).getContext('2d');
     ctx.drawImage(image, 0, 0);
     const pixel = (x: number, y: number) => [...ctx.getImageData(x, y, 1, 1).data];
-    expect(pixel(0, 0)).toEqual([248, 250, 252, 255]);
+    expect(pixel(0, 0)).toEqual([250, 250, 248, 255]);
     expect(pixel(35, 40)).toEqual([255, 255, 255, 255]);
     expect(pixel(1135, 190)).toEqual([255, 255, 255, 255]);
-    expect(pixel(1244, 169)).toEqual([37, 99, 235, 255]);
+    expect(pixel(1244, 169)).toEqual([0, 163, 108, 255]);
   });
 });
 

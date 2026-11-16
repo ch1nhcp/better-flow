@@ -2,11 +2,9 @@
   font-family: var(--font-sans);
   color: var(--color-primary);
   background: var(--color-neutral);
-  font-size: 16px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  line-height: 1.55;
 }
 
 * {
@@ -14,6 +12,11 @@
 }
 body {
   margin: 0;
+  font-size: var(--font-body);
+  line-height: var(--line-body);
+}
+button {
+  font-family: inherit;
 }
 a {
   color: inherit;
@@ -25,11 +28,14 @@ p {
   margin: 0;
 }
 h1,
-h2,
+h2 {
+  font-weight: var(--weight-heading);
+}
 strong {
   font-weight: 600;
 }
 h1 {
+  font-size: var(--font-heading);
   line-height: 1.25;
 }
 :focus-visible {
@@ -60,16 +66,10 @@ main:focus {
   place-items: center;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
-  background: var(--color-tertiary);
-  color: var(--button-text);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-surface);
   font: 0.75rem var(--font-mono);
-}
-:is(.auth-screen, .workspace, .workspace-session) {
-  font-family: var(--font-sans);
-}
-:is(.auth-screen, .workspace, .workspace-session) :is(h1, .brand, .brand-mark) {
-  font-weight: 700;
 }
 .icon {
   width: 16px;
@@ -83,9 +83,9 @@ main:focus {
   justify-content: center;
   gap: var(--space-sm);
   min-height: 40px;
-  padding: 7px 14px;
+  padding: 12px 20px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font: 600 0.875rem var(--font-sans);
   cursor: pointer;
 }
