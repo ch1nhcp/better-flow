@@ -4,7 +4,9 @@ import { roadmapFitOptions } from './roadmap-canvas-options';
 import './roadmap-canvas.css';
 
 export function RoadmapCanvasBackground() {
-  return <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} color="#cbd5e1" />;
+  return (
+    <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} color="var(--color-grid)" />
+  );
 }
 
 export function RoadmapViewportControls() {

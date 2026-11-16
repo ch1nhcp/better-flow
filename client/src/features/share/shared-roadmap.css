@@ -40,8 +40,7 @@
   border-radius: 999px;
   background: var(--color-neutral);
   color: var(--color-secondary);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font: var(--font-label) var(--font-mono);
 }
 
 .shared-roadmap-canvas {
@@ -75,7 +74,7 @@
   margin: 0;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.86);
+  background: rgb(from var(--color-surface) r g b / 0.86);
   color: var(--color-secondary);
   font-size: 0.8125rem;
   text-align: center;
@@ -98,10 +97,7 @@
 }
 
 .shared-roadmap-state-card h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-primary);
+  font-size: clamp(1.5rem, 3vw, var(--font-heading));
 }
 
 .shared-roadmap-state-card p {
