@@ -67,8 +67,7 @@
   gap: 6px;
   margin-inline: 7px;
   color: var(--color-secondary);
-  font-size: 0.8125rem;
-  line-height: 1.3;
+  font: var(--font-label)/1.3 var(--font-mono);
 }
 
 .editor-save-status:is(.saved, .dirty, .error)::before {
@@ -80,15 +79,15 @@
 }
 
 .editor-save-status.saved::before {
-  background: #00845f;
+  background: var(--color-accent-text);
 }
 
 .editor-save-status.dirty::before {
-  background: #d97706;
+  background: var(--color-secondary);
 }
 
 .editor-save-status.error {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 .editor-save-status.error::before {
@@ -133,7 +132,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  box-shadow: 0 2px 8px rgb(15 23 42 / 8%);
+  box-shadow: 0 2px 8px rgb(from var(--color-primary) r g b / 8%);
 }
 
 .editor-add-btn {
@@ -239,7 +238,7 @@
 }
 
 .editor-field label span {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 .editor-field input,
@@ -299,7 +298,7 @@
 }
 
 .editor-field-error {
-  color: #b91c1c;
+  color: var(--color-danger);
   font-size: 0.8125rem;
 }
 
@@ -310,13 +309,13 @@
 }
 
 .secondary-button.editor-delete-step {
-  border-color: #fecaca;
-  color: #b91c1c;
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
 }
 
 .secondary-button.editor-delete-step:hover {
-  background: #fef2f2;
-  border-color: #fca5a5;
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
 }
 
 .editor-step-delete p {
@@ -341,13 +340,13 @@
   border: 0;
   border-radius: var(--radius-md);
   background: transparent;
-  color: #b91c1c;
+  color: var(--color-danger);
   font: 600 0.875rem var(--font-sans);
   cursor: pointer;
 }
 
 .editor-delete-btn:hover {
-  background: #fee2e2;
+  background: var(--color-danger-border);
 }
 
 .editor-empty-inspector {
@@ -369,7 +368,7 @@
   max-width: 440px;
   padding: var(--space-lg);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   text-align: center;
 }
@@ -378,10 +377,10 @@
   width: min(100% - 32px, 420px);
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   color: var(--color-primary);
-  box-shadow: 0 20px 48px rgb(15 23 42 / 0.16);
+  box-shadow: 0 20px 48px rgb(from var(--color-primary) r g b / 0.16);
 }
 
 .editor-dialog:modal {
@@ -391,7 +390,7 @@
 .editor-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background: rgb(15 23 42 / 0.35);
+  background: rgb(from var(--color-primary) r g b / 0.35);
 }
 
 .editor-download-dialog {
@@ -425,7 +424,7 @@
 }
 
 .editor-download-option .icon {
-  color: var(--color-tertiary);
+  color: var(--color-accent-text);
 }
 
 .secondary-button.editor-download-option:hover:not(:disabled) {
@@ -441,7 +440,7 @@
 .secondary-button.editor-download-option[aria-busy='true'] {
   border-color: var(--color-accent-border);
   background: var(--color-accent-soft);
-  color: var(--color-accent-hover);
+  color: var(--color-accent-text);
   opacity: 1;
   cursor: progress;
 }
@@ -490,7 +489,7 @@
 }
 
 .editor-download-status.error {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 @media (max-width: 360px) {

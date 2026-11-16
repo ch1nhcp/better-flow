@@ -44,6 +44,16 @@ const descriptionGap = 4;
 const padding = 24;
 const maxImageSide = 8192;
 const maxImagePixels = 16_000_000;
+// Match the AI Labs canvas tokens in client/src/styles/tokens.css.
+const canvasColors = {
+  neutral: '#fafaf8',
+  surface: '#ffffff',
+  border: '#dcdedf',
+  primary: '#0f1112',
+  secondary: '#6f7478',
+  accent: '#00a36c',
+};
+const stepRadius = 8;
 
 interface Step {
   x: number;
@@ -116,20 +126,20 @@ function createConnection(edge: RoadmapEdge, source: Step, target: Step) {
 
 function drawStep(ctx: SKRSContext2D, step: Step) {
   ctx.beginPath();
-  ctx.roundRect(step.x, step.y, stepWidth, step.height, 10);
-  ctx.fillStyle = '#ffffff';
+  ctx.roundRect(step.x, step.y, stepWidth, step.height, stepRadius);
+  ctx.fillStyle = canvasColors.surface;
   ctx.fill();
-  ctx.strokeStyle = '#e2e8f0';
+  ctx.strokeStyle = canvasColors.border;
   ctx.lineWidth = 1;
   ctx.stroke();
 
   const x = step.x + stepPaddingX;
   const y = step.y + stepPaddingY;
   ctx.font = labelFont;
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = canvasColors.primary;
   step.label.forEach((line, index) => ctx.fillText(line, x, y + index * labelLineHeight));
   ctx.font = descriptionFont;
-  ctx.fillStyle = '#64748b';
+  ctx.fillStyle = canvasColors.secondary;
   const descriptionY = y + step.label.length * labelLineHeight + descriptionGap;
   step.description.forEach((line, index) =>
     ctx.fillText(line, x, descriptionY + index * descriptionLineHeight),
@@ -165,13 +175,13 @@ export async function renderRoadmapPng({
   );
   canvas.width = Math.ceil(width * scale);
   canvas.height = Math.ceil(height * scale);
-  ctx.fillStyle = '#f8fafc';
+  ctx.fillStyle = canvasColors.neutral;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.setTransform(scale, 0, 0, scale, -left * scale, -top * scale);
 
   ctx.lineWidth = 1.75;
-  ctx.strokeStyle = '#94a3b8';
-  ctx.fillStyle = '#2563eb';
+  ctx.strokeStyle = canvasColors.secondary;
+  ctx.fillStyle = canvasColors.accent;
   for (const { path, animated, targetX, targetY } of connections) {
     ctx.setLineDash(animated ? [5, 5] : []);
     ctx.stroke(path);
@@ -188,7 +198,7 @@ export async function renderRoadmapPng({
 
   if (!steps.size) {
     ctx.font = labelFont;
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = canvasColors.secondary;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Roadmap chưa có bước', 136, 56);

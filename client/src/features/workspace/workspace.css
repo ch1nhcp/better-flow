@@ -13,15 +13,14 @@
 }
 
 .workspace-heading h1 {
-  font-size: 1.5rem;
-  line-height: 2rem;
-  letter-spacing: -0.025em;
+  font-size: clamp(1.5rem, 3vw, var(--font-heading));
+  letter-spacing: var(--tracking-display);
 }
 
 .workspace-heading p {
   margin-top: 4px;
   color: var(--color-secondary);
-  font-size: 0.875rem;
+  font-size: var(--font-body);
 }
 
 .workspace-demo-notice {
@@ -66,7 +65,7 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   cursor: pointer;
   transition:
@@ -92,7 +91,7 @@
 .roadmap-card:has(a.card-link:hover),
 .roadmap-card:hover {
   border-color: var(--color-tertiary);
-  box-shadow: 0 8px 20px rgb(15 23 42 / 0.08);
+  box-shadow: 0 8px 20px rgb(from var(--color-primary) r g b / 0.08);
 }
 
 .roadmap-card button {
@@ -111,7 +110,7 @@
   padding: 26px 16px 12px;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-neutral)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='1.4' fill='%23d7e1ed'/%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='1.4' fill='%23d4d5d3'/%3E%3C/svg%3E");
 }
 
 .step-count {
@@ -141,7 +140,7 @@
   top: 8px;
   bottom: 8px;
   left: 50%;
-  border-left: 2px dashed var(--color-accent-border);
+  border-left: 2px dashed var(--color-grid);
   content: '';
 }
 
@@ -221,7 +220,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.12);
+  box-shadow: 0 8px 24px rgb(from var(--color-primary) r g b / 0.12);
 }
 
 [popover].roadmap-menu:popover-open {
@@ -256,7 +255,7 @@
   min-height: 32px;
   padding: 6px 10px;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-primary);
   font: 500 0.8125rem var(--font-sans);
@@ -269,11 +268,11 @@
 }
 
 .roadmap-menu-item.danger {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 .roadmap-menu-item.danger:hover {
-  background: #fef2f2;
+  background: var(--color-danger-soft);
 }
 
 .roadmap-details > p {
@@ -301,14 +300,14 @@
 .visibility-badge {
   padding: 0 6px;
   border: 1px solid var(--color-border);
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   background: var(--color-neutral);
 }
 
 .visibility-badge.shared {
   border-color: var(--color-accent-border);
   background: var(--color-accent-soft);
-  color: var(--color-accent-hover);
+  color: var(--color-accent-text);
 }
 
 .workspace-session {
@@ -332,10 +331,10 @@
   width: min(100% - 32px, 420px);
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   color: var(--color-primary);
-  box-shadow: 0 20px 48px rgb(15 23 42 / 0.16);
+  box-shadow: 0 20px 48px rgb(from var(--color-primary) r g b / 0.16);
 }
 
 .create-roadmap-dialog:modal {
@@ -345,7 +344,7 @@
 .create-roadmap-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background: rgb(15 23 42 / 0.35);
+  background: rgb(from var(--color-primary) r g b / 0.35);
 }
 
 .create-roadmap-form {
@@ -380,7 +379,7 @@
 }
 
 .create-roadmap-field input[aria-invalid='true'] {
-  border-color: #dc2626;
+  border-color: var(--color-danger);
 }
 
 .create-roadmap-help {
@@ -389,7 +388,7 @@
 }
 
 .create-roadmap-error {
-  color: #b91c1c;
+  color: var(--color-danger);
   font-size: 0.8125rem;
 }
 
@@ -420,14 +419,14 @@
 }
 
 .secondary-button.delete-roadmap-confirm {
-  border-color: #dc2626;
-  background: #dc2626;
-  color: #ffffff;
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-surface);
 }
 
 .secondary-button.delete-roadmap-confirm:hover:not(:disabled) {
-  border-color: #b91c1c;
-  background: #b91c1c;
+  border-color: var(--color-danger);
+  background: var(--color-danger);
 }
 
 .secondary-button.delete-roadmap-confirm:disabled {

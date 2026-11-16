@@ -192,8 +192,8 @@ test('displays and sorts user roadmaps from GET /api/roadmaps', async ({ page },
 
   await page.goto('/roadmaps');
   const heading = page.getByRole('heading', { name: 'Roadmap của tôi' });
-  await expect(heading).toHaveCSS('font-family', /Segoe UI/);
-  await expect(heading).toHaveCSS('font-weight', '700');
+  await expect(heading).toHaveCSS('font-family', /IBM Plex Sans/);
+  await expect(heading).toHaveCSS('font-weight', '500');
   await expect(page.getByRole('button', { name: 'Tạo roadmap' })).toBeEnabled();
   const headings = page.getByRole('list', { name: 'Danh sách roadmap' }).getByRole('heading');
   await expect(headings).toHaveText([

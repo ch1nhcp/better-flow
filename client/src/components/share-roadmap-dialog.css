@@ -4,10 +4,10 @@
   margin: auto;
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   color: var(--color-primary);
-  box-shadow: 0 20px 48px rgb(15 23 42 / 0.16);
+  box-shadow: 0 20px 48px rgb(from var(--color-primary) r g b / 0.16);
 }
 
 .share-dialog:modal {
@@ -17,7 +17,7 @@
 .share-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background: rgb(15 23 42 / 0.35);
+  background: rgb(from var(--color-primary) r g b / 0.35);
 }
 
 .share-dialog-header {
@@ -112,7 +112,7 @@
   height: 18px;
   border-radius: 50%;
   background: var(--color-surface);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.2);
+  box-shadow: 0 1px 2px rgb(from var(--color-primary) r g b / 0.2);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -199,7 +199,7 @@
 
 .share-dialog-copy-inline:hover:not(:disabled) {
   border-color: var(--color-tertiary);
-  color: var(--color-tertiary);
+  color: var(--color-accent-text);
 }
 
 .share-dialog-copy-inline:disabled {
@@ -219,7 +219,7 @@
 .share-dialog-status {
   margin-top: var(--space-sm);
   font-size: 0.8125rem;
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 
 .share-dialog-footer {

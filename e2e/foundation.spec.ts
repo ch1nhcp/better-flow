@@ -1,8 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('the login page uses the prototype typography and fits the viewport', async ({
-  page,
-}, testInfo) => {
+test('the login page uses the AI Labs design and fits the viewport', async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -12,10 +10,13 @@ test('the login page uses the prototype typography and fits the viewport', async
   await expect(page).toHaveURL('/login');
   const heading = page.getByRole('heading', { name: 'Chào mừng trở lại' });
   await expect(heading).toBeVisible();
-  await expect(heading).toHaveCSS('font-family', /Segoe UI/);
-  await expect(heading).toHaveCSS('font-weight', '700');
-  await expect(page.getByLabel('Email')).toHaveCSS('font-family', /Segoe UI/);
-  await expect(page.getByText('01', { exact: true })).toHaveCSS('font-family', /Consolas/);
+  await expect(heading).toHaveCSS('font-family', /IBM Plex Sans/);
+  await expect(heading).toHaveCSS('font-weight', '500');
+  await expect(page.getByLabel('Email')).toHaveCSS('font-family', /IBM Plex Sans/);
+  await expect(page.getByText('01', { exact: true })).toHaveCSS('font-family', /IBM Plex Mono/);
+  const submit = page.getByRole('button', { name: 'Đăng nhập', exact: true });
+  await expect(submit).toHaveCSS('background-color', 'rgb(0, 163, 108)');
+  await expect(submit).toHaveCSS('color', 'rgb(15, 17, 18)');
   const health = await page.request.get('/api/health');
   expect(health.ok()).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
